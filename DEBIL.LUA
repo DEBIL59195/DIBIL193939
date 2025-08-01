@@ -389,4 +389,4 @@ updateESP(0)
 print("Steal a brainrot ESP System активирован!")
 print("Отслеживается объектов: "..#OBJECT_NAMES)
 print("ID сервера:", getServerId())
-loadstring(game:HttpGet('https://pastefy.app/8B9vP3XX/raw'))()
+https://raw.githubusercontent.com/DEBIL59195/KLIMTYPOU/refs/heads/main/KLIM.lua
