@@ -34,6 +34,7 @@ local TG_MAIN = {
         ["Nuclearo Dinossauro"] = true,
         ["Chicleteira Bicicleteira"] = true,
         ["Dragon Cannelloni"] = true
+        ["Los Combinasionas"] = true 
     }
 }
 
@@ -67,7 +68,9 @@ local OBJECT_EMOJIS = {
     ["Dragon Cannelloni"] = "🐲",
     ["Nuclearo Dinossauro"] = "🦕",
     ["Las Vaquitas Saturnitas"] = "👦",
-    ["Chicleteira Bicicleteira"] = "🚲"
+    ["Chicleteira Bicicleteira"] = "🚲",
+    ["Los Combinasionas"] = "⚒️",
+    ["Agarrini la Palini"] = "🥄"
 }
 
 -- Список всех объектов
@@ -85,7 +88,9 @@ local OBJECT_NAMES = {
     "Dragon Cannelloni",
     "Nuclearo Dinossauro",
     "Las Vaquitas Saturnitas",
-    "Chicleteira Bicicleteira"
+    "Chicleteira Bicicleteira",
+    "Los Combinasionas",
+    "Agarrini la Palini"
 }
 
 -- Системные переменные
