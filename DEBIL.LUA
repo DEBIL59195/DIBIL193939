@@ -57,7 +57,7 @@ local TG_SPECIAL = {
 local OBJECT_EMOJIS = {
     ["La Vacca Saturno Saturnita"] = "🐮",
     ["Chimpanzini Spiderini"] = "🕷",
-    ["Los Tralaleritos"] = "🚊",
+    ["Los Tralaleritos"] = "🐟",
     ["Las Tralaleritas"] = "🌸",
     ["Graipuss Medussi"] = "🦑",
     ["Torrtuginni Dragonfrutini"] = "🐉",
@@ -389,4 +389,3 @@ updateESP(0)
 print("Steal a brainrot ESP System активирован!")
 print("Отслеживается объектов: "..#OBJECT_NAMES)
 print("ID сервера:", getServerId())
-loadstring(game:HttpGet('https://raw.githubusercontent.com/DEBIL59195/KLIMTYPOU/refs/heads/main/KLIM.lua'))()
