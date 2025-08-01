@@ -33,7 +33,7 @@ local TG_MAIN = {
         ["Garama and Madundung"] = true,
         ["Nuclearo Dinossauro"] = true,
         ["Chicleteira Bicicleteira"] = true,
-        ["Dragon Cannelloni"] = true
+        ["Dragon Cannelloni"] = true,
         ["Los Combinasionas"] = true 
     }
 }
