@@ -85,7 +85,9 @@ local MUTATION_EMOJIS = {
     ["Gold"] = "🟨",
     ["Lava"] = "🟧",
     ["Rainbow"] = "🌈",
-    ["Diamond"] = "💎"
+    ["Diamond"] = "💎",
+    ["Candy"] = "🍬",
+    ["Bloodrot"] = "🟥"
 }
 
 local OBJECT_NAMES = {
