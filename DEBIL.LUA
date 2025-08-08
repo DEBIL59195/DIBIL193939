@@ -42,7 +42,9 @@ local TG_MAIN = {
         ["Nuclearo Dinossauro"] = true,
         ["Chicleteira Bicicleteira"] = true,
         ["Dragon Cannelloni"] = true,
-        ["Los Combinasionas"] = true 
+        ["Los Combinasionas"] = true,
+        ["Los Hotspotsitos"] = true,
+        ["Esok Sekolah"] = true
     }
 }
 
@@ -53,7 +55,8 @@ local TG_SPECIAL = {
     SpecialObjects = {
         ["La Vacca Saturno Saturnita"] = true,
         ["Chimpanzini Spiderini"] = true,
-        ["Agarrini la Palini"] = true
+        ["Agarrini la Palini"] = true,
+        ["Karkerkar Kurkur"] = true
     },
     GroupSettings = {
         PinMessages = true,
@@ -78,7 +81,10 @@ local OBJECT_EMOJIS = {
     ["Las Vaquitas Saturnitas"] = "👦",
     ["Chicleteira Bicicleteira"] = "🚲",
     ["Los Combinasionas"] = "⚒️",
-    ["Agarrini la Palini"] = "🥄"
+    ["Agarrini la Palini"] = "🥄",
+    ["Los Hotspotsitos"] = "☎️",
+    ["Esok Sekolah"] = "🏠",
+    ["Karkerkar Kurkur"] = "🪑"
 }
 
 -- Эмодзи для мутаций
@@ -107,7 +113,10 @@ local OBJECT_NAMES = {
     "Las Vaquitas Saturnitas",
     "Chicleteira Bicicleteira",
     "Los Combinasionas",
-    "Agarrini la Palini"
+    "Agarrini la Palini",
+    "Los Hotspotsitos",
+    "Esok Sekolah",
+    "Karkerkar Kurkur"
 }
 
 -- Системные переменные
