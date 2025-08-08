@@ -52,7 +52,8 @@ local TG_SPECIAL = {
     Enabled = true,
     SpecialObjects = {
         ["La Vacca Saturno Saturnita"] = true,
-        ["Chimpanzini Spiderini"] = true
+        ["Chimpanzini Spiderini"] = true,
+        ["Agarrini la Palini"] = true
     },
     GroupSettings = {
         PinMessages = true,
