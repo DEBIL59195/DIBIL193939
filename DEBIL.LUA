@@ -102,7 +102,8 @@ local TRAIT_MULTIPLIERS = {
     ["Bubblegum"] = 4,
     ["Cometstruck"] = 3.5,
     ["Galactic"] = 4,
-    ["Explosive"] = 4
+    ["Explosive"] = 4,
+    ["Wet"] = 3
 }
 
 -- Эмодзи для объектов
