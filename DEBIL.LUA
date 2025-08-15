@@ -193,12 +193,14 @@ end
 local function incomeToNumber(incomeStr)
     if incomeStr == "???/s" then return 0 end
     
-    local value = tonumber(incomeStr:match("%d+%.?%d*"))
-    local unit = incomeStr:match("([MK])/s")
+    -- Удаляем все нечисловые символы (кроме точки и K/M)
+    local valueStr = incomeStr:match("[%d%.]+") or "0"
+    local value = tonumber(valueStr)
+    if not value then return 0 end
     
-    if unit == "M" then
+    if incomeStr:find("M/s") then
         return value * 1000000
-    elseif unit == "K" then
+    elseif incomeStr:find("K/s") then
         return value * 1000
     else
         return value
@@ -206,6 +208,8 @@ local function incomeToNumber(incomeStr)
 end
 
 local function formatIncomeNumber(num)
+    if num == 0 then return "???" end
+    
     if num >= 1000000 then
         local mValue = num/1000000
         return string.format(mValue % 1 == 0 and "%dM/s" or "%.1fM/s", mValue):gsub("%.0M/s", "M/s")
@@ -285,28 +289,28 @@ local function scanObject(obj)
     
     -- Раздельные множители
     local mutationMultiplier = 1
-    local traitsMultiplier = 1
+    local traitsBonus = 0
     local appliedMutation = {}
     local appliedTraits = {}
 
     -- Применяем множитель мутации
     if mutation and MUTATION_MULTIPLIERS[mutation] then
         mutationMultiplier = MUTATION_MULTIPLIERS[mutation]
-        table.insert(appliedMutation, mutation.." (x"..MUTATION_MULTIPLIERS[mutation]..")")
+        table.insert(appliedMutation, mutation)
     end
 
-    -- Применяем множители трейтов
+    -- Применяем множители трейтов (аддитивно)
     for _, trait in ipairs(traits) do
         if TRAIT_MULTIPLIERS[trait] then
-            traitsMultiplier = traitsMultiplier * TRAIT_MULTIPLIERS[trait]
-            table.insert(appliedTraits, trait.." (x"..TRAIT_MULTIPLIERS[trait]..")")
+            traitsBonus = traitsBonus + (TRAIT_MULTIPLIERS[trait] - 1)
+            table.insert(appliedTraits, trait)
         end
     end
 
-    -- Рассчитываем итоговый доход (формула: base * mutation + base * (traits - 1))
+    -- Рассчитываем итоговый доход (формула: base * mutation + base * traitsBonus)
     local finalIncome = baseIncome
     if baseIncomeStr ~= "???/s" then
-        finalIncome = baseIncome * mutationMultiplier + baseIncome * (traitsMultiplier - 1)
+        finalIncome = baseIncome * mutationMultiplier + baseIncome * traitsBonus
     end
 
     return {
@@ -316,7 +320,7 @@ local function scanObject(obj)
         baseIncome = baseIncomeStr,
         finalIncome = formatIncomeNumber(finalIncome),
         mutationMultiplier = mutationMultiplier,
-        traitsMultiplier = traitsMultiplier,
+        traitsBonus = traitsBonus,
         appliedMutation = appliedMutation,
         appliedTraits = appliedTraits,
         numericIncome = finalIncome
@@ -333,30 +337,24 @@ local function createColoredText(objData)
     textLabel.TextStrokeTransparency = 0.3
     
     local emoji = OBJECT_EMOJIS[objData.name] or "🔹"
-    local incomeText = objData.finalIncome ~= "???/s" and objData.finalIncome or "???"
+    local incomeText = objData.finalIncome ~= "???" and objData.finalIncome or "???"
     
     local richText = string.format(
         '<font color="rgb(255,255,255)">%s%s %s: %s</font>',
         emoji, getMutationEmoji(objData.mutation), objData.name, incomeText
     )
     
-    -- Показываем мутации и трейты с их множителями
-    if objData.mutation and MUTATION_MULTIPLIERS[objData.mutation] then
+    -- Показываем мутации и трейты
+    if objData.mutation then
         richText = richText .. string.format(
-            '\n<font color="rgb(255,255,150)">%s x%.2f</font>',
-            objData.mutation, objData.mutationMultiplier
+            '\n<font color="rgb(255,255,150)">%s</font>',
+            objData.mutation
         )
     end
     
     if #objData.traits > 0 then
         richText = richText .. '\n<font color="rgb(150,255,150)">'
-        for _, trait in ipairs(objData.traits) do
-            if TRAIT_MULTIPLIERS[trait] then
-                richText = richText .. string.format('%s x%.2f ', trait, TRAIT_MULTIPLIERS[trait])
-            else
-                richText = richText .. trait .. ' '
-            end
-        end
+        richText = richText .. table.concat(objData.traits, " ")
         richText = richText .. '</font>'
     end
     
@@ -443,6 +441,10 @@ local function sendMainTelegramAlert()
             
             message = message .. string.format("%s%s %s (%s)", emoji, mutationEmoji, objData.name, objData.finalIncome)
             
+            if objData.mutation then
+                message = message .. " " .. objData.mutation
+            end
+            
             if #objData.traits > 0 then
                 message = message .. " " .. table.concat(objData.traits, " ")
             end
@@ -459,6 +461,10 @@ local function sendMainTelegramAlert()
             local mutationEmoji = getMutationEmoji(objData.mutation)
             
             message = message .. string.format("%s%s %s (%s)", emoji, mutationEmoji, objData.name, objData.finalIncome)
+            
+            if objData.mutation then
+                message = message .. " " .. objData.mutation
+            end
             
             if #objData.traits > 0 then
                 message = message .. " " .. table.concat(objData.traits, " ")
@@ -510,6 +516,10 @@ local function sendSpecialTelegramAlert()
         local mutationEmoji = getMutationEmoji(objData.mutation)
         
         message = message .. string.format("%s%s %s (%s)", emoji, mutationEmoji, objData.name, objData.finalIncome)
+        
+        if objData.mutation then
+            message = message .. " " .. objData.mutation
+        end
         
         if #objData.traits > 0 then
             message = message .. " " .. table.concat(objData.traits, " ")
@@ -646,12 +656,11 @@ UserInputService.InputBegan:Connect(function(input)
                     print("Имя:", details.name)
                     print("Доход:", details.finalIncome)
                     if details.mutation then
-                        print("Мутация:", details.mutation.." (x"..details.mutationMultiplier..")")
+                        print("Мутация:", details.mutation)
                     end
                     print("Traits ("..#details.traits.."):")
                     for i, trait in ipairs(details.traits) do
-                        local multiplier = TRAIT_MULTIPLIERS[trait] and " (x"..TRAIT_MULTIPLIERS[trait]..")" or ""
-                        print(i..".", trait..multiplier)
+                        print(i..".", trait)
                     end
                 end
             end
