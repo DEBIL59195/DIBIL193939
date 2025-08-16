@@ -125,7 +125,8 @@ local OBJECT_EMOJIS = {
     ["Agarrini la Palini"] = "🥄",
     ["Los Hotspotsitos"] = "☎️",
     ["Esok Sekolah"] = "🏠",
-    ["Karkerkar Kurkur"] = "🪑"
+    ["Karkerkar Kurkur"] = "🪑",
+    ["Karkerkar Kurkur"] = "⬜️"
 }
 
 -- Эмодзи для мутаций
@@ -158,7 +159,8 @@ local OBJECT_NAMES = {
     "Agarrini la Palini",
     "Los Hotspotsitos",
     "Esok Sekolah",
-    "Karkerkar Kurkur"
+    "Karkerkar Kurkur",
+    "Job Job Job Sahur"
 }
 
 -- Системные переменные
