@@ -74,7 +74,7 @@ local OBJECT_INCOME = {
     ["Agarrini la Palini"] = "425K/s",
     ["Los Hotspotsitos"] = "20M/s",
     ["Esok Sekolah"] = "30M/s",
-    ["Karkerkar Kurkur"] = "275K/s"
+    ["Karkerkar Kurkur"] = "275K/s",
     ["Job Job Job Sahur"] = "700K/s"
 }
 
