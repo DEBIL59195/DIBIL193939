@@ -75,6 +75,7 @@ local OBJECT_INCOME = {
     ["Los Hotspotsitos"] = "20M/s",
     ["Esok Sekolah"] = "30M/s",
     ["Karkerkar Kurkur"] = "275K/s"
+    ["Job Job Job Sahur"] = "700K/s"
 }
 
 -- Множители мутаций и трейтов
@@ -126,7 +127,7 @@ local OBJECT_EMOJIS = {
     ["Los Hotspotsitos"] = "☎️",
     ["Esok Sekolah"] = "🏠",
     ["Karkerkar Kurkur"] = "🪑",
-    ["Karkerkar Kurkur"] = "⬜️"
+    ["Job Job Job Sahur"] = "⬜️"
 }
 
 -- Эмодзи для мутаций
