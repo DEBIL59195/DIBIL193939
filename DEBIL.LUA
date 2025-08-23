@@ -44,8 +44,9 @@ local TG_MAIN = {
         ["Dragon Cannelloni"] = true,
         ["Los Combinasionas"] = true,
         ["Los Hotspotsitos"] = true,
-        ["Esok Sekolah"] = true
-        ["La Supreme Combinasion"] = true
+        ["Esok Sekolah"] = true,
+        ["La Supreme Combinasion"] = true,
+        ["Admin Lucky Block"] = true
     }
 }
 
@@ -129,8 +130,9 @@ local OBJECT_EMOJIS = {
     ["Los Hotspotsitos"] = "☎️",
     ["Esok Sekolah"] = "🏠",
     ["Karkerkar Kurkur"] = "🪑",
-    ["Job Job Job Sahur"] = "⬜️"
-    ["La Supreme Combinasion"] = "🔫"
+    ["Job Job Job Sahur"] = "⬜️",
+    ["La Supreme Combinasion"] = "🔫",
+    ["Admin Lucky Block"] = "🆘"
 }
 
 -- Эмодзи для мутаций
@@ -140,7 +142,8 @@ local MUTATION_EMOJIS = {
     ["Rainbow"] = "🌈",
     ["Diamond"] = "💎",
     ["Candy"] = "🍬",
-    ["Bloodrot"] = "🟥"
+    ["Bloodrot"] = "🟥",
+    ["Galaxy"] = "🟪"
 }
 
 -- Список объектов
@@ -164,8 +167,9 @@ local OBJECT_NAMES = {
     "Los Hotspotsitos",
     "Esok Sekolah",
     "Karkerkar Kurkur",
-    "Job Job Job Sahur"
-    "La Supreme Combinasion"
+    "Job Job Job Sahur",
+    "La Supreme Combinasion",
+    "Admin Lucky Block"
 }
 
 -- Системные переменные
