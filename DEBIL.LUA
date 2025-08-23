@@ -45,6 +45,7 @@ local TG_MAIN = {
         ["Los Combinasionas"] = true,
         ["Los Hotspotsitos"] = true,
         ["Esok Sekolah"] = true
+        ["La Supreme Combinasion"] = true
     }
 }
 
@@ -76,6 +77,7 @@ local OBJECT_INCOME = {
     ["Esok Sekolah"] = "30M/s",
     ["Karkerkar Kurkur"] = "275K/s",
     ["Job Job Job Sahur"] = "700K/s"
+    ["La Supreme Combinasion"] = "40M/s"
 }
 
 -- Множители мутаций и трейтов
@@ -128,6 +130,7 @@ local OBJECT_EMOJIS = {
     ["Esok Sekolah"] = "🏠",
     ["Karkerkar Kurkur"] = "🪑",
     ["Job Job Job Sahur"] = "⬜️"
+    ["La Supreme Combinasion"] = "🔫"
 }
 
 -- Эмодзи для мутаций
@@ -162,6 +165,7 @@ local OBJECT_NAMES = {
     "Esok Sekolah",
     "Karkerkar Kurkur",
     "Job Job Job Sahur"
+    "La Supreme Combinasion"
 }
 
 -- Системные переменные
