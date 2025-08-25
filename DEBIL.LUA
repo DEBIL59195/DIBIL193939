@@ -46,7 +46,8 @@ local TG_MAIN = {
         ["Los Hotspotsitos"] = true,
         ["Esok Sekolah"] = true,
         ["La Supreme Combinasion"] = true,
-        ["Admin Lucky Block"] = true
+        ["Admin Lucky Block"] = true,
+        ["Ketupat Kepat"] = true
     }
 }
 
@@ -78,7 +79,8 @@ local OBJECT_INCOME = {
     ["Esok Sekolah"] = "30M/s",
     ["Karkerkar Kurkur"] = "275K/s",
     ["Job Job Job Sahur"] = "700K/s",
-    ["La Supreme Combinasion"] = "40M/s"
+    ["La Supreme Combinasion"] = "40M/s",
+    ["La Supreme Combinasion"] = "35M/s"
 }
 
 -- Множители мутаций и трейтов
@@ -88,7 +90,8 @@ local MUTATION_MULTIPLIERS = {
     ["Diamond"] = 1.5,
     ["Bloodrot"] = 2,
     ["Candy"] = 4,
-    ["Lava"] = 6
+    ["Lava"] = 6,
+    ["Galaxy"] = 6
 }
 
 local TRAIT_MULTIPLIERS = {
@@ -132,7 +135,8 @@ local OBJECT_EMOJIS = {
     ["Karkerkar Kurkur"] = "🪑",
     ["Job Job Job Sahur"] = "⬜️",
     ["La Supreme Combinasion"] = "🔫",
-    ["Admin Lucky Block"] = "🆘"
+    ["Admin Lucky Block"] = "🆘",
+    ["Admin Lucky Block"] = "⚰️"
 }
 
 -- Эмодзи для мутаций
@@ -169,7 +173,8 @@ local OBJECT_NAMES = {
     "Karkerkar Kurkur",
     "Job Job Job Sahur",
     "La Supreme Combinasion",
-    "Admin Lucky Block"
+    "Admin Lucky Block",
+    "Ketupat Kepat"
 }
 
 -- Системные переменные
