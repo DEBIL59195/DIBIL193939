@@ -46,7 +46,7 @@ local TG_MAIN = {
         ["Los Hotspotsitos"] = true,
         ["Esok Sekolah"] = true,
         ["La Supreme Combinasion"] = true,
-        ["Admin Lucky Block"] = true,
+        ["dw"] = true,
         ["Ketupat Kepat"] = true
     }
 }
