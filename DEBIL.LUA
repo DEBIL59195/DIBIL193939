@@ -136,7 +136,7 @@ local OBJECT_EMOJIS = {
     ["Job Job Job Sahur"] = "⬜️",
     ["La Supreme Combinasion"] = "🔫",
     ["Admin Lucky Block"] = "🆘",
-    ["Admin Lucky Block"] = "⚰️"
+    ["Ketupat Kepat"] = "⚰️"
 }
 
 -- Эмодзи для мутаций
