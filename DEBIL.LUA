@@ -46,8 +46,9 @@ local TG_MAIN = {
         ["Los Hotspotsitos"] = true,
         ["Esok Sekolah"] = true,
         ["La Supreme Combinasion"] = true,
-        ["dw"] = true,
-        ["Ketupat Kepat"] = true
+        ["Nooo My Hotspot"] = true,
+        ["Ketupat Kepat"] = true,
+        ["Nooo My Hotspot"] = true
     }
 }
 
@@ -80,7 +81,7 @@ local OBJECT_INCOME = {
     ["Karkerkar Kurkur"] = "275K/s",
     ["Job Job Job Sahur"] = "700K/s",
     ["La Supreme Combinasion"] = "40M/s",
-    ["La Supreme Combinasion"] = "35M/s"
+    ["Nooo My Hotspot"] = "10M/s"
 }
 
 -- Множители мутаций и трейтов
@@ -132,7 +133,7 @@ local OBJECT_EMOJIS = {
     ["Agarrini la Palini"] = "🥄",
     ["Los Hotspotsitos"] = "☎️",
     ["Esok Sekolah"] = "🏠",
-    ["Karkerkar Kurkur"] = "🪑",
+    ["Nooo My Hotspot"] = "👽",
     ["Job Job Job Sahur"] = "⬜️",
     ["La Supreme Combinasion"] = "🔫",
     ["Admin Lucky Block"] = "🆘",
@@ -170,7 +171,7 @@ local OBJECT_NAMES = {
     "Agarrini la Palini",
     "Los Hotspotsitos",
     "Esok Sekolah",
-    "Karkerkar Kurkur",
+    "Nooo My Hotspot",
     "Job Job Job Sahur",
     "La Supreme Combinasion",
     "Admin Lucky Block",
