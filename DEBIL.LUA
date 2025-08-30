@@ -48,7 +48,10 @@ local TG_MAIN = {
         ["La Supreme Combinasion"] = true,
         ["Nooo My Hotspot"] = true,
         ["Ketupat Kepat"] = true,
-        ["Nooo My Hotspot"] = true
+        ["Nooo My Hotspot"] = true,
+        ["Spaghetti Tualetti"] = true,
+        ["Strawberry Elephant"] = true,
+        ["Ketchuru and Musturu"] = true
     }
 }
 
@@ -81,7 +84,10 @@ local OBJECT_INCOME = {
     ["Karkerkar Kurkur"] = "275K/s",
     ["Job Job Job Sahur"] = "700K/s",
     ["La Supreme Combinasion"] = "40M/s",
-    ["Nooo My Hotspot"] = "10M/s"
+    ["Nooo My Hotspot"] = "10M/s",
+    ["Spaghetti Tualetti"] = "7.5M/s",
+    ["Strawberry Elephant"] = "250M/s",
+    ["Ketchuru and Musturu"] = "50M/s"
 }
 
 -- Множители мутаций и трейтов
@@ -137,7 +143,10 @@ local OBJECT_EMOJIS = {
     ["Job Job Job Sahur"] = "⬜️",
     ["La Supreme Combinasion"] = "🔫",
     ["Admin Lucky Block"] = "🆘",
-    ["Ketupat Kepat"] = "⚰️"
+    ["Ketupat Kepat"] = "⚰️",
+    ["Strawberry Elephant"] = "🐘",
+    ["Spaghetti Tualetti"] = "🚽",
+    ["Ketchuru and Musturu"] = "🍾"
 }
 
 -- Эмодзи для мутаций
@@ -175,7 +184,10 @@ local OBJECT_NAMES = {
     "Job Job Job Sahur",
     "La Supreme Combinasion",
     "Admin Lucky Block",
-    "Ketupat Kepat"
+    "Ketupat Kepat",
+    "Strawberry Elephant",
+    "Spaghetti Tualetti",
+    "Ketchuru and Musturu"
 }
 
 -- Системные переменные
