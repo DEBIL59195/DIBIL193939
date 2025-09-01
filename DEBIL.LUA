@@ -618,7 +618,7 @@ local function updateESP(deltaTime)
                 playDetectionSound()
                 
                 -- Добавляем в соответствующий список для уведомлений
-                if TG_MAIN.ImportantObjects[obj.Name] or objData.numericIncome >= 5000000 then
+                if TG_MAIN.ImportantObjects[obj.Name] or objData.numericIncome >= 10000000 then
                     table.insert(objectsToNotifyMain, objData)
                 else
                     table.insert(objectsToNotifySpecial, objData)
