@@ -51,7 +51,8 @@ local TG_MAIN = {
         ["Nooo My Hotspot"] = true,
         ["Spaghetti Tualetti"] = true,
         ["Strawberry Elephant"] = true,
-        ["Ketchuru and Musturu"] = true
+        ["Ketchuru and Musturu"] = true,
+        ["Los Nooo My Hotspotsitos"] = true
     }
 }
 
@@ -87,7 +88,8 @@ local OBJECT_INCOME = {
     ["Nooo My Hotspot"] = "10M/s",
     ["Spaghetti Tualetti"] = "7.5M/s",
     ["Strawberry Elephant"] = "250M/s",
-    ["Ketchuru and Musturu"] = "50M/s"
+    ["Ketchuru and Musturu"] = "50M/s",
+    ["Los Nooo My Hotspotsitos"] = "5M/s"
 }
 
 -- Множители мутаций и трейтов
@@ -146,7 +148,8 @@ local OBJECT_EMOJIS = {
     ["Ketupat Kepat"] = "⚰️",
     ["Strawberry Elephant"] = "🐘",
     ["Spaghetti Tualetti"] = "🚽",
-    ["Ketchuru and Musturu"] = "🍾"
+    ["Ketchuru and Musturu"] = "🍾",
+    ["Los Nooo My Hotspotsitos"] = "🥔"
 }
 
 -- Эмодзи для мутаций
@@ -187,7 +190,8 @@ local OBJECT_NAMES = {
     "Ketupat Kepat",
     "Strawberry Elephant",
     "Spaghetti Tualetti",
-    "Ketchuru and Musturu"
+    "Ketchuru and Musturu",
+    "Los Nooo My Hotspotsitos"
 }
 
 -- Системные переменные
