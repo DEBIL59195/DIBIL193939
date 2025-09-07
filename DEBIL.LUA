@@ -65,6 +65,21 @@ local TG_SPECIAL = {
     Enabled = true
 }
 
+-- Функция проверки прозрачности частей Cube.
+local function checkCubeTransparency(obj)
+    if not obj:IsA("Model") then return true end
+    
+    for _, part in ipairs(obj:GetDescendants()) do
+        if part:IsA("BasePart") and part.Name:match("^Cube%.") then
+            print("Проверка: " .. part.Name .. " - прозрачность " .. part.Transparency)
+            if part.Transparency > 0.40 then
+                return false
+            end
+        end
+    end
+    return true
+end
+
 -- Доходы объектов (все значения в /s)
 local OBJECT_INCOME = {
     ["La Vacca Saturno Saturnita"] = "250K/s",
@@ -322,6 +337,12 @@ end
 
 local function scanObject(obj)
     if not obj or not obj.Parent then return nil end
+    
+    -- Проверка прозрачности только для частей Cube.
+    if not checkCubeTransparency(obj) then
+        print(obj.Name .. ": найдены части Cube. с высокой прозрачностью (>0.40), уведомление не отправляется")
+        return nil
+    end
     
     local mutation = findMutation(obj)
     local traits = findTraits(obj)
@@ -631,13 +652,15 @@ local function updateESP(deltaTime)
             if not espCache[obj] then
                 espCache[obj] = createESPElement(obj)
                 local objData = espCache[obj].data
-                playDetectionSound()
-                
-                -- Добавляем в соответствующий список для уведомлений
-                if TG_MAIN.ImportantObjects[obj.Name] or objData.numericIncome >= 10000000 then
-                    table.insert(objectsToNotifyMain, objData)
-                else
-                    table.insert(objectsToNotifySpecial, objData)
+                if objData then
+                    playDetectionSound()
+                    
+                    -- Добавляем в соответствующий список для уведомлений
+                    if TG_MAIN.ImportantObjects[obj.Name] or objData.numericIncome >= 10000000 then
+                        table.insert(objectsToNotifyMain, objData)
+                    else
+                        table.insert(objectsToNotifySpecial, objData)
+                    end
                 end
             end
 
