@@ -190,24 +190,26 @@ local function updateESP(dt)
     for _, obj in ipairs(workspace:GetDescendants()) do
         if isValidTarget(obj) then
             local rootPart = getRootPart(obj)
-            local dist = (rootPart.Position - camera.CFrame.Position).Magnitude
-            if dist <= ESP_SETTINGS.MaxDistance then
-                if not espCache[obj] then
-                    local espData = createESP(obj)
-                    if espData then
-                        espCache[obj] = espData
+            if rootPart then
+                local dist = (rootPart.Position - camera.CFrame.Position).Magnitude
+                if dist <= ESP_SETTINGS.MaxDistance then
+                    if not espCache[obj] then
+                        local espData = createESP(obj)
+                        if espData then
+                            espCache[obj] = espData
+                        end
                     end
-                end
-                local espData = espCache[obj]
-                if espData then
-                    local _, onScreen = camera:WorldToViewportPoint(rootPart.Position)
-                    espData.gui.Enabled = onScreen
-                    found = found + 1
-                end
-            else
-                if espCache[obj] then
-                    espCache[obj].gui:Destroy()
-                    espCache[obj] = nil
+                    local espData = espCache[obj]
+                    if espData then
+                        local _, onScreen = camera:WorldToViewportPoint(rootPart.Position)
+                        espData.gui.Enabled = onScreen
+                        found = found + 1
+                    end
+                else
+                    if espCache[obj] then
+                        espCache[obj].gui:Destroy()
+                        espCache[obj] = nil
+                    end
                 end
             end
         end
@@ -216,11 +218,9 @@ local function updateESP(dt)
     statusLabel.Text = '🔍 ESP: ACTIVE | Found: ' .. found
 end
 
--- ИСПРАВЛЕННАЯ ФУНКЦИЯ КАМЕРЫ
+-- Функция камеры
 local function enableFollowCamera()
     if not isCameraRaised then
-        -- Сохраняем оригинальные настройки
-        local originalCameraType = camera.CameraType
         camera.CameraType = Enum.CameraType.Scriptable
 
         cameraFollowConnection = RunService.RenderStepped:Connect(function()
@@ -229,17 +229,14 @@ local function enableFollowCamera()
                 local humanoidRootPart = character.HumanoidRootPart
                 local characterPosition = humanoidRootPart.Position
                 
-                -- Позиция камеры выше и дальше от персонажа
                 local cameraOffset = Vector3.new(0, CAMERA_HEIGHT_OFFSET, 15)
                 local cameraPosition = characterPosition + cameraOffset
                 
-                -- Направление взгляда камеры
                 local lookAtPoint = characterPosition + Vector3.new(0, 3, 0)
                 
-                -- Плавное перемещение камеры
                 camera.CFrame = camera.CFrame:Lerp(
                     CFrame.new(cameraPosition, lookAtPoint),
-                    0.2 -- Увеличена плавность
+                    0.2
                 )
             end
         end)
@@ -256,7 +253,6 @@ local function disableFollowCamera()
             cameraFollowConnection = nil
         end
 
-        -- Возвращаем стандартную камеру
         camera.CameraType = Enum.CameraType.Custom
         isCameraRaised = false
         print('Камера возвращена в стандартный режим')
@@ -341,25 +337,23 @@ local function safeMicroTeleportUp()
     end
 end
 
--- Обновление координат
+-- ИСПРАВЛЕННАЯ ФУНКЦИЯ КООРДИНАТ
 local function updateCoordinates()
     local character = player.Character
-    if character then
-        local humanoidRootPart = character:FindFirstChild('HumanoidRootPart')
-        if humanoidRootPart then
-            local pos = humanoidRootPart.Position
-            local heightFromStart = startingHeight and (pos.Y - startingHeight) or 0
-            local cameraStatus = isCameraRaised and 'Следит' or 'Стандарт'
+    if character and character:FindFirstChild('HumanoidRootPart') then
+        local humanoidRootPart = character.HumanoidRootPart
+        local pos = humanoidRootPart.Position
+        local heightFromStart = startingHeight and (pos.Y - startingHeight) or 0
+        local cameraStatus = isCameraRaised and 'Следит' or 'Стандарт'
 
-            CoordinatesLabel.Text = string.format(
-                'X: %.1f, Y: %.1f, Z: %.1f\nВысота: %.1f | Камера: %s',
-                pos.X,
-                pos.Y,
-                pos.Z,
-                heightFromStart,
-                cameraStatus
-            )
-        end
+        CoordinatesLabel.Text = string.format(
+            'X: %.1f, Y: %.1f, Z: %.1f\nВысота: %.1f | Камера: %s',
+            pos.X,
+            pos.Y,
+            pos.Z,
+            heightFromStart,
+            cameraStatus
+        )
     else
         CoordinatesLabel.Text = 'Персонаж не найден'
     end
@@ -367,49 +361,53 @@ end
 
 -- Обработчики событий
 RunService.Heartbeat:Connect(function(dt)
-    updateESP(dt)
-    updateCoordinates()
+    pcall(function()
+        updateESP(dt)
+        updateCoordinates()
+    end)
 end)
 
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
 
-    if input.KeyCode == Enum.KeyCode.Y then
-        if not isCameraRaised then
-            enableFollowCamera()
-        else
-            disableFollowCamera()
+    pcall(function()
+        if input.KeyCode == Enum.KeyCode.Y then
+            if not isCameraRaised then
+                enableFollowCamera()
+            else
+                disableFollowCamera()
+            end
         end
-    end
 
-    if input.KeyCode == Enum.KeyCode.T then
-        freezeCharacter()
-    end
-
-    if input.KeyCode == Enum.KeyCode.U then
-        safeMicroTeleportUp()
-    end
-
-    if input.KeyCode == Enum.KeyCode.R then
-        local character = player.Character
-        if character and character:FindFirstChild('HumanoidRootPart') then
-            startingHeight = character.HumanoidRootPart.Position.Y
-            print('Начальная высота сброшена')
+        if input.KeyCode == Enum.KeyCode.T then
+            freezeCharacter()
         end
-    end
 
-    if input.KeyCode == Enum.KeyCode.G then
-        if CAMERA_HEIGHT_OFFSET == 8 then
-            CAMERA_HEIGHT_OFFSET = 15
-            print('Высота камеры: 15 studs')
-        elseif CAMERA_HEIGHT_OFFSET == 15 then
-            CAMERA_HEIGHT_OFFSET = 25
-            print('Высота камеры: 25 studs')
-        else
-            CAMERA_HEIGHT_OFFSET = 8
-            print('Высота камеры: 8 studs')
+        if input.KeyCode == Enum.KeyCode.U then
+            safeMicroTeleportUp()
         end
-    end
+
+        if input.KeyCode == Enum.KeyCode.R then
+            local character = player.Character
+            if character and character:FindFirstChild('HumanoidRootPart') then
+                startingHeight = character.HumanoidRootPart.Position.Y
+                print('Начальная высота сброшена')
+            end
+        end
+
+        if input.KeyCode == Enum.KeyCode.G then
+            if CAMERA_HEIGHT_OFFSET == 8 then
+                CAMERA_HEIGHT_OFFSET = 15
+                print('Высота камеры: 15 studs')
+            elseif CAMERA_HEIGHT_OFFSET == 15 then
+                CAMERA_HEIGHT_OFFSET = 25
+                print('Высота камеры: 25 studs')
+            else
+                CAMERA_HEIGHT_OFFSET = 8
+                print('Высота камеры: 8 studs')
+            end
+        end
+    end)
 end)
 
 Players.PlayerRemoving:Connect(function(leavingPlayer)
