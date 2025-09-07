@@ -10,25 +10,25 @@ local OBJECT_EMOJIS = {
     ['La Vacca Saturno Saturnita'] = '🐮',
     ['Nooo My Hotspot'] = '👽',
     ['La Supreme Combinasion'] = '🔫',
-    ['Ketupat Kepat'] = '⚰️',
+    ['Ketupat Kepat'] = '☕',
     ['Graipuss Medussi'] = '🦑',
     ['Torrtuginni Dragonfrutini'] = '🐢',
     ['Pot Hotspot'] = '📱',
     ['La Grande Combinasion'] = '❗',
-    ['Garama and Madundung'] = '🥫',
-    ['Secret Lucky Block'] = '⬛️',
+    ['Garama and Madundung'] = '🥛',
+    ['Secret Lucky Block'] = '❓',
     ['Strawberry Elephant'] = '🐘',
     ['Nuclearo Dinossauro'] = '🦕',
     ['Spaghetti Tualetti'] = '🚽',
     ['Chicleteira Bicicleteira'] = '🚲',
-    ['Los Combinasionas'] = '⚒️',
-    ['Ketchuru and Musturu'] = '🍾',
-    ['Los Hotspotsitos'] = '☎️',
-    ['Los Nooo My Hotspotsitos'] = '🥔',
-    ['Esok Sekolah'] = '🏠',
-    ["La Karkerkar Combinsion"] = "🥊",
-    ["Tralaledon"] = "🦈",
-    ["Los Bros"] = "✊"
+    ['Los Combinasionas'] = '⚡',
+    ['Ketchuru and Musturu'] = '🍶',
+    ['Los Hotspotsitos'] = '⭐',
+    ['Los Nooo My Hotspotsitos'] = '🔄',
+    ['Esok Sekolah'] = '🏫',
+    ["La Karkerkar Combinsion"] = "💊",
+    ["Tralaledon"] = "🐬",
+    ["Los Bros"] = "✨"
 }
 
 local ESP_SETTINGS = {
@@ -216,10 +216,10 @@ local function updateESP(dt)
     statusLabel.Text = '🔍 ESP: ACTIVE | Found: ' .. found
 end
 
--- ИСПРАВЛЕННЫЕ ФУНКЦИИ КАМЕРЫ
+-- ИСПРАВЛЕННАЯ ФУНКЦИЯ КАМЕРЫ
 local function enableFollowCamera()
     if not isCameraRaised then
-        -- Сохраняем текущую камеру перед изменением
+        -- Сохраняем оригинальные настройки
         local originalCameraType = camera.CameraType
         camera.CameraType = Enum.CameraType.Scriptable
 
@@ -229,17 +229,17 @@ local function enableFollowCamera()
                 local humanoidRootPart = character.HumanoidRootPart
                 local characterPosition = humanoidRootPart.Position
                 
-                -- Позиция камеры выше и сзади персонажа
-                local cameraOffset = Vector3.new(0, CAMERA_HEIGHT_OFFSET, 8)
+                -- Позиция камеры выше и дальше от персонажа
+                local cameraOffset = Vector3.new(0, CAMERA_HEIGHT_OFFSET, 15)
                 local cameraPosition = characterPosition + cameraOffset
                 
-                -- Направление взгляда камеры (немного вниз на персонажа)
-                local lookAtPoint = characterPosition + Vector3.new(0, 2, 0)
+                -- Направление взгляда камеры
+                local lookAtPoint = characterPosition + Vector3.new(0, 3, 0)
                 
                 -- Плавное перемещение камеры
                 camera.CFrame = camera.CFrame:Lerp(
                     CFrame.new(cameraPosition, lookAtPoint),
-                    0.1
+                    0.2 -- Увеличена плавность
                 )
             end
         end)
@@ -256,7 +256,7 @@ local function disableFollowCamera()
             cameraFollowConnection = nil
         end
 
-        -- Возвращаем стандартный режим камеры
+        -- Возвращаем стандартную камеру
         camera.CameraType = Enum.CameraType.Custom
         isCameraRaised = false
         print('Камера возвращена в стандартный режим')
@@ -425,4 +425,4 @@ Players.PlayerRemoving:Connect(function(leavingPlayer)
 end)
 
 print('🔍 SCALABLE EMOJI ESP + CAMERA CONTROLS loaded!')
-print('Y - камера следует сверху, T - заморозка, U - телепорт, R - сброс высоты, G - высота камеры123')
+print('Y - камера следует сверху, T - заморозка, U - телепорт, R - сброс высоты, G - высота камеры')
