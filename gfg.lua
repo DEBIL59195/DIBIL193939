@@ -1,3 +1,132 @@
+-- SAFE ANTI-LEAK PROTECTION for Roblox (обход readonly ошибок)
+local G = (getgenv and getgenv()) or _G
+
+local function clog(msg)
+    msg = '[SAFE-BLOCK] ' .. tostring(msg)
+    if warn then
+        warn(msg)
+    else
+        print(msg)
+    end
+    if G.rconsoleprint then
+        G.rconsoleprint(msg .. '\n')
+    end
+end
+
+-- Безопасная замена с проверкой readonly
+local function safe_replace(table, key, new_func)
+    local success, error_msg = pcall(function()
+        local original = table[key]
+        if original ~= new_func then
+            table[key] = new_func
+        end
+    end)
+    if success then
+        clog('Replaced ' .. tostring(key))
+    else
+        clog('Failed to replace ' .. tostring(key) .. ' (' .. tostring(error_msg) .. ')')
+    end
+    return success
+end
+
+-- Функция-блокировщик
+local function block_request(opts)
+    local url = 'unknown'
+    if type(opts) == 'table' then
+        url = opts.Url or opts.url or tostring(opts)
+    else
+        url = tostring(opts)
+    end
+    clog('BLOCKED: ' .. url)
+    return {
+        StatusCode = 200,
+        Headers = {},
+        Body = '{"blocked":true}',
+        Success = true,
+    }
+end
+
+-- Пытаемся заменить основные HTTP функции
+if type(G.request) == 'function' then
+    safe_replace(G, 'request', block_request)
+end
+
+if type(G.http_request) == 'function' then
+    safe_replace(G, 'http_request', block_request)
+end
+
+if type(G.syn_request) == 'function' then
+    safe_replace(G, 'syn_request', block_request)
+end
+
+-- Замена во вложенных таблицах (только если они существуют)
+pcall(function()
+    if G.syn and type(G.syn) == 'table' and type(G.syn.request) == 'function' then
+        safe_replace(G.syn, 'request', block_request)
+    end
+end)
+
+pcall(function()
+    if G.http and type(G.http) == 'table' and type(G.http.request) == 'function' then
+        safe_replace(G.http, 'request', block_request)
+    end
+end)
+
+pcall(function()
+    if G.fluxus and type(G.fluxus) == 'table' and type(G.fluxus.request) == 'function' then
+        safe_replace(G.fluxus, 'request', block_request)
+    end
+end)
+
+pcall(function()
+    if G.krnl and type(G.krnl) == 'table' and type(G.krnl.request) == 'function' then
+        safe_replace(G.krnl, 'request', block_request)
+    end
+end)
+
+-- Альтернативный подход через перехват вызовов
+pcall(function()
+    -- Создаем прокси-функции вместо прямой замены
+    local function create_proxy(original_func, func_name)
+        if type(original_func) ~= 'function' then return original_func end
+        
+        return function(...)
+            local args = {...}
+            if #args > 0 then
+                local url = 'unknown'
+                if type(args[1]) == 'table' then
+                    url = args[1].Url or args[1].url or tostring(args[1])
+                else
+                    url = tostring(args[1])
+                end
+                clog('BLOCKED ' .. func_name .. ': ' .. url)
+                return {
+                    StatusCode = 200,
+                    Success = true,
+                    Body = '{"blocked":true}',
+                }
+            end
+            return original_func(...)
+        end
+    end
+
+    -- Пытаемся создать прокси для основных функций
+    if type(G.request) == 'function' then
+        G.request = create_proxy(G.request, 'request')
+    end
+    
+    if type(game.HttpGet) == 'function' then
+        game.HttpGet = create_proxy(game.HttpGet, 'HttpGet')
+    end
+    
+    if type(game.HttpPost) == 'function' then
+        game.HttpPost = create_proxy(game.HttpPost, 'HttpPost')
+    end
+end)
+
+clog('SAFE PROTECTION ENABLED - HTTP requests blocked where possible')
+
+-- ОСНОВНОЙ СКРИПТ
 local RunService = game:GetService('RunService')
 local Players = game:GetService('Players')
 local CoreGui = game:GetService('CoreGui')
@@ -337,7 +466,7 @@ local function safeMicroTeleportUp()
     end
 end
 
--- ИСПРАВЛЕННАЯ ФУНКЦИЯ КООРДИНАТ
+-- Исправленная функция координат
 local function updateCoordinates()
     local character = player.Character
     if character and character:FindFirstChild('HumanoidRootPart') then
