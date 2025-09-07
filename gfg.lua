@@ -80,7 +80,7 @@ CoordinatesFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 CoordinatesFrame.BackgroundTransparency = 0.3
 CoordinatesFrame.BorderSizePixel = 0
 CoordinatesFrame.Size = UDim2.new(0, 220, 0, 80)
-CoordinatesFrame.Position = UDim2.new(0, 10, 0, 100) -- Подвинул ниже статуса ESP
+CoordinatesFrame.Position = UDim2.new(0, 10, 0, 100)
 CoordinatesFrame.Active = false
 
 local UICorner = Instance.new('UICorner')
@@ -216,20 +216,31 @@ local function updateESP(dt)
     statusLabel.Text = '🔍 ESP: ACTIVE | Found: ' .. found
 end
 
--- Функции камеры и телепорта
+-- ИСПРАВЛЕННЫЕ ФУНКЦИИ КАМЕРЫ
 local function enableFollowCamera()
     if not isCameraRaised then
+        -- Сохраняем текущую камеру перед изменением
+        local originalCameraType = camera.CameraType
         camera.CameraType = Enum.CameraType.Scriptable
 
         cameraFollowConnection = RunService.RenderStepped:Connect(function()
             local character = player.Character
-            if character then
-                local humanoidRootPart = character:FindFirstChild('HumanoidRootPart')
-                if humanoidRootPart then
-                    local characterPosition = humanoidRootPart.Position
-                    local cameraPosition = characterPosition + Vector3.new(0, CAMERA_HEIGHT_OFFSET, 0)
-                    camera.CFrame = CFrame.lookAt(cameraPosition, characterPosition)
-                end
+            if character and character:FindFirstChild('HumanoidRootPart') then
+                local humanoidRootPart = character.HumanoidRootPart
+                local characterPosition = humanoidRootPart.Position
+                
+                -- Позиция камеры выше и сзади персонажа
+                local cameraOffset = Vector3.new(0, CAMERA_HEIGHT_OFFSET, 8)
+                local cameraPosition = characterPosition + cameraOffset
+                
+                -- Направление взгляда камеры (немного вниз на персонажа)
+                local lookAtPoint = characterPosition + Vector3.new(0, 2, 0)
+                
+                -- Плавное перемещение камеры
+                camera.CFrame = camera.CFrame:Lerp(
+                    CFrame.new(cameraPosition, lookAtPoint),
+                    0.1
+                )
             end
         end)
 
@@ -245,6 +256,7 @@ local function disableFollowCamera()
             cameraFollowConnection = nil
         end
 
+        -- Возвращаем стандартный режим камеры
         camera.CameraType = Enum.CameraType.Custom
         isCameraRaised = false
         print('Камера возвращена в стандартный режим')
