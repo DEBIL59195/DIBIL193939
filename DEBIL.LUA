@@ -108,7 +108,7 @@ local OBJECT_INCOME = {
     ["Strawberry Elephant"] = "250M/s",
     ["Ketchuru and Musturu"] = "50M/s",
     ["Los Nooo My Hotspotsitos"] = "5M/s",
-    ["La Karkerkar Combinsion"] = "50M/s",
+    ["La Karkerkar Combinasion"] = "50M/s",
     ["Tralaledon"] = "50M/s",
     ["Los Bros"] = "50M/s"
 }
@@ -171,7 +171,7 @@ local OBJECT_EMOJIS = {
     ["Spaghetti Tualetti"] = "🚽",
     ["Ketchuru and Musturu"] = "🍾",
     ["Los Nooo My Hotspotsitos"] = "🥔",
-    ["La Karkerkar Combinsion"] = "🥊",
+    ["La Karkerkar Combinasion"] = "🥊",
     ["Tralaledon"] = "🦈",
     ["Los Bros"] = "✊"
 }
@@ -216,7 +216,7 @@ local OBJECT_NAMES = {
     "Spaghetti Tualetti",
     "Ketchuru and Musturu",
     "Los Nooo My Hotspotsitos",
-    "La Karkerkar Combinsion",
+    "La Karkerkar Combinasion",
     "Los Bros",
     "Tralaledon"
 }
