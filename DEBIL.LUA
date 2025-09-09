@@ -53,7 +53,7 @@ local TG_MAIN = {
         ["Strawberry Elephant"] = true,
         ["Ketchuru and Musturu"] = true,
         ["Los Nooo My Hotspotsitos"] = true,
-        ["La Karkerkar Combinsion"] = true,
+        ["La Karkerkar Combinasion"] = true,
         ["Tralaledon"] = true,
         ["Los Bros"] = true
     }
