@@ -171,7 +171,7 @@ local OBJECT_EMOJIS = {
     ["Spaghetti Tualetti"] = "🚽",
     ["Ketchuru and Musturu"] = "🍾",
     ["Los Nooo My Hotspotsitos"] = "🥔",
-    ["La Karkerkar Combinasion"] = "🥊",
+    ["La Kark666erkar Combinasion"] = "🥊",
     ["Tralaledon"] = "🦈",
     ["Los Bros"] = "✊"
 }
