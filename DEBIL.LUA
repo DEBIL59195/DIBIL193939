@@ -53,7 +53,7 @@ local TG_MAIN = {
         ["Strawberry Elephant"] = true,
         ["Ketchuru and Musturu"] = true,
         ["Los Nooo My Hotspotsitos"] = true,
-        ["La Karkerkar Combinasion"] = true,
+        ["La Kark7658erkar Combinasion"] = true,
         ["Tralaledon"] = true,
         ["Los Bros"] = true
     }
@@ -108,7 +108,7 @@ local OBJECT_INCOME = {
     ["Strawberry Elephant"] = "250M/s",
     ["Ketchuru and Musturu"] = "50M/s",
     ["Los Nooo My Hotspotsitos"] = "5M/s",
-    ["La Karkerkar Combinasion"] = "50M/s",
+    ["La Kark767erkar Combinasion"] = "50M/s",
     ["Tralaledon"] = "50M/s",
     ["Los Bros"] = "50M/s"
 }
@@ -216,7 +216,7 @@ local OBJECT_NAMES = {
     "Spaghetti Tualetti",
     "Ketchuru and Musturu",
     "Los Nooo My Hotspotsitos",
-    "La Karkerkar Combinasion",
+    "La Kark56656erkar Combinasion",
     "Los Bros",
     "Tralaledon"
 }
