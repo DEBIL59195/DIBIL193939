@@ -1,6 +1,5 @@
 local G = (getgenv and getgenv()) or _G
 
--- Блокировка HTTP запросов
 local function clog(msg)
     msg = '[SAFE-BLOCK] ' .. tostring(msg)
     if warn then
@@ -113,7 +112,6 @@ end)
 
 clog('SAFE PROTECTION ENABLED - HTTP requests blocked where possible')
 
--- ESP система
 local RunService = game:GetService('RunService')
 local Players = game:GetService('Players')
 local CoreGui = game:GetService('CoreGui')
@@ -147,7 +145,7 @@ local ESP_SETTINGS = {
     Font = Enum.Font.GothamBold,
     Color = Color3.fromRGB(148, 0, 211),
     BgColor = Color3.fromRGB(24, 16, 40),
-    TxtColor = Color3.fromRGB(225, 210, 255),
+    TtxtColor = Color3.fromRGB(225, 210, 255),
 }
 
 local camera = workspace.CurrentCamera
@@ -155,14 +153,13 @@ local espCache = {}
 local screenGui = nil
 local statusLabel = nil
 
--- Функция инициализации GUI
 local function initializeGUI()
     if not CoreGui:FindFirstChild('PurpleESP') then
         screenGui = Instance.new('ScreenGui')
         screenGui.Name = 'PurpleESP'
         screenGui.Parent = CoreGui
         screenGui.ResetOnSpawn = false
-
+        
         statusLabel = Instance.new('TextLabel')
         statusLabel.Name = 'ESPStatus'
         statusLabel.Text = '🔍 ESP: ACTIVE'
@@ -206,16 +203,13 @@ local function getRootPart(obj)
 end
 
 local function isValidTarget(obj)
-    return OBJECT_EMOJIS[obj.Name]
-        and ((obj:IsA('BasePart')) or (obj:IsA('Model') and getRootPart(obj)))
+    return OBJECT_EMOJIS[obj.Name] and ((obj:IsA('BasePart')) or (obj:IsA('Model') and getRootPart(obj)))
 end
 
 local function createESP(obj)
     local success, result = pcall(function()
         local rootPart = getRootPart(obj)
-        if not rootPart then
-            return nil
-        end
+        if not rootPart then return nil end
 
         local gui = Instance.new('BillboardGui')
         gui.Adornee = rootPart
@@ -259,9 +253,9 @@ local function createESP(obj)
 
         return { gui = gui, rootPart = rootPart }
     end)
-
+    
     if not success then
-        warn('ESP creation error:', result)
+        warn("ESP creation error:", result)
         return nil
     end
     return result
@@ -269,16 +263,14 @@ end
 
 local lastUpdate = 0
 local function updateESP(dt)
-    if not screenGui or not statusLabel then
-        return
-    end
-
+    if not screenGui or not statusLabel then return end
+    
     lastUpdate = lastUpdate + dt
     if lastUpdate < ESP_SETTINGS.UpdateInterval then
         return
     end
     lastUpdate = 0
-
+    
     clearOldESP()
 
     local found = 0
@@ -297,8 +289,7 @@ local function updateESP(dt)
                     end
                     local espData = espCache[obj]
                     if espData then
-                        local _, onScreen =
-                            camera:WorldToViewportPoint(rootPart.Position)
+                        local _, onScreen = camera:WorldToViewportPoint(rootPart.Position)
                         espData.gui.Enabled = onScreen
                         if onScreen then
                             found = found + 1
@@ -316,7 +307,6 @@ local function updateESP(dt)
     statusLabel.Text = '🔍 ESP: ACTIVE | Found: ' .. found
 end
 
--- Инициализация ESP
 initializeGUI()
 
 local heartbeatConnection
@@ -348,11 +338,9 @@ playerRemovingConnection = Players.PlayerRemoving:Connect(function(player)
     end
 end)
 
--- Запуск ESP
 startESP()
 print('🔍 SCALABLE EMOJI ESP loaded!')
 
--- Система камеры
 local UserInputService = game:GetService('UserInputService')
 local player = Players.LocalPlayer
 
@@ -406,18 +394,12 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
--- Экспорт функций для внешнего управления
 return {
-    -- ESP функции
     startESP = startESP,
     stopESP = stopESP,
     espSettings = ESP_SETTINGS,
-
-    -- Функции камеры
     enableCamera = enableFollowCamera,
     disableCamera = disableFollowCamera,
-
-    -- Общие функции
     blockHTTP = function()
         clog('Manual HTTP blocking triggered')
     end,
