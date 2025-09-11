@@ -1,14 +1,9 @@
--- ===== SAFE HTTP BLOCK =====
+-- == Безопасный HTTP Block ==
 local G = (getgenv and getgenv()) or _G
 local function clog(msg)
     msg = '[SAFE-BLOCK] ' .. tostring(msg)
     if warn then warn(msg) else print(msg) end
     if G.rconsoleprint then G.rconsoleprint(msg .. '\n') end
-end
-local function safe_replace(tableObj, key, new_func)
-    local success = pcall(function() tableObj[key] = new_func end)
-    if success then clog('Replaced ' .. tostring(key)) else clog('Failed to replace ' .. tostring(key) .. ' (readonly)') end
-    return success
 end
 local function block_request(opts)
     local url = 'unknown'
@@ -16,47 +11,32 @@ local function block_request(opts)
     clog('BLOCKED: ' .. url)
     return { StatusCode = 200, Headers = {}, Body = '{"blocked":true}', Success = true }
 end
+local function safe_replace(tableObj, key, new_func)
+    local succ = pcall(function() tableObj[key] = new_func end)
+    if succ then clog('Replaced ' .. tostring(key)) end
+    return succ
+end
 safe_replace(G, 'request', block_request)
 safe_replace(G, 'http_request', block_request)
-safe_replace(G, 'syn_request', block_request)
-pcall(function() if G.syn and type(G.syn) == 'table' then safe_replace(G.syn, 'request', block_request) end end)
-pcall(function() if G.http and type(G.http) == 'table' then safe_replace(G.http, 'request', block_request) end end)
-pcall(function() if G.fluxus and type(G.fluxus) == 'table' then safe_replace(G.fluxus, 'request', block_request) end end)
-pcall(function() if G.krnl and type(G.krnl) == 'table' then safe_replace(G.krnl, 'request', block_request) end end)
-pcall(function()
-    local HttpService = game:GetService('HttpService')
-    if HttpService then
-        HttpService.RequestAsync = function(self, opts)
-            clog('BLOCKED HttpService.RequestAsync: ' .. tostring(opts.Url or 'unknown'))
-            return { StatusCode = 200, Success = true, Body = '{"blocked":true}' }
-        end
-        game.HttpGet = function(self, url) clog('BLOCKED game:HttpGet: ' .. tostring(url)); return '{"blocked":true}' end
-        game.HttpPost = function(self, url, data) clog('BLOCKED game:HttpPost: ' .. tostring(url)); return '{"blocked":true}' end
-    end
-end)
-pcall(function()
-    local mt = getmetatable(G) or {}
-    local old_index = mt.__index
-    mt.__index = function(t, k)
-        if k == 'request' or k == 'http_request' or k == 'syn_request' then
-            return block_request
-        end
-        return old_index and old_index(t, k) or rawget(t, k)
-    end
-    setmetatable(G, mt)
-    clog('Metatable protection enabled')
-end)
-clog('SAFE PROTECTION ENABLED - HTTP requests blocked where possible')
+pcall(function() if G.syn then safe_replace(G.syn, 'request', block_request) end end)
+pcall(function() if G.http then safe_replace(G.http, 'request', block_request) end end)
+-- == END HTTP ==
 
--- ===== SETTINGS & CONSTANTS =====
+-- == Гарантированное получение LocalPlayer ==
 local Players = game:GetService('Players')
-local CoreGui = game:GetService('CoreGui')
-local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local player = Players.LocalPlayer
+if not player then
+    Players:GetPropertyChangedSignal("LocalPlayer"):Wait()
+    player = Players.LocalPlayer
+end
+
 local RunService = game:GetService('RunService')
 local TweenService = game:GetService('TweenService')
+local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local CoreGui = game:GetService('CoreGui')
 local UserInputService = game:GetService('UserInputService')
-local player = Players.LocalPlayer
 
+-- == Стиль UI и иконки ==
 local UI_THEME = {
     PanelBg = Color3.fromRGB(16, 14, 24),
     PanelStroke = Color3.fromRGB(95, 70, 160),
@@ -67,32 +47,23 @@ local UI_THEME = {
     ButtonOff = Color3.fromRGB(160, 60, 80),
 }
 local ICONS = {
-    Zap = "rbxassetid://7733911822",
-    Eye = "rbxassetid://7733745385",
-    Camera = "rbxassetid://7733871300",
+    Zap = "rbxassetid://7733911822", Eye = "rbxassetid://7733745385", Camera = "rbxassetid://7733871300"
 }
-local ESP_SETTINGS = {
-    MaxDistance = 500,
-    Font = Enum.Font.GothamBold,
-    Color = Color3.fromRGB(148, 0, 211),
-    BgColor = Color3.fromRGB(24, 16, 40),
-    TxtColor = Color3.fromRGB(225, 210, 255),
-    TextSize = 16,
-}
-local OBJECT_EMOJIS = {
-    ['La Vacca Saturno Saturnita'] = '🐮', ['Nooo My Hotspot'] = '👽',
-    ['La Supreme Combinasion'] = '🔫',['Ketupat Kepat'] = '⚰️', ['Graipuss Medussi'] = '🦑',
-    ['Torrtuginni Dragonfrutini'] = '🐢', ['Pot Hotspot'] = ' 📱', ['La Grande Combinasion'] = '❗️',
-    ['Garama and Madundung'] = '🥫', ['Secret Lucky Block'] = '⬛️', ['Strawberry Elephant'] = '🐘',
-    ['Nuclearo Dinossauro'] = '🦕', ['Spaghetti Tualetti'] = '🚽', ['Chicleteira Bicicleteira'] = '🚲',
-    ['Los Combinasionas'] = '⚒️', ['Ketchuru and Musturu'] = '🍾', ['Los Hotspotsitos'] = '☎️',
-    ['Los Nooo My Hotspotsitos'] = '🔔', ['Esok Sekolah'] = '🏠',
+local ESP_SETTINGS = { MaxDistance = 500, Font = Enum.Font.GothamBold, Color = Color3.fromRGB(148, 0, 211),
+    BgColor = Color3.fromRGB(24, 16, 40), TxtColor = Color3.fromRGB(225, 210, 255), TextSize = 16 }
+local OBJECT_EMOJIS = {['La Vacca Saturno Saturnita'] = '🐮', ['Nooo My Hotspot'] = '👽', ['La Supreme Combinasion'] = '🔫',
+    ['Ketupat Kepat'] = '⚰️',['Graipuss Medussi'] = '🦑',['Torrtuginni Dragonfrutini'] = '🐢',
+    ['Pot Hotspot'] = ' 📱',['La Grande Combinasion'] = '❗️',['Garama and Madundung'] = '🥫',
+    ['Secret Lucky Block'] = '⬛️',['Strawberry Elephant'] = '🐘',['Nuclearo Dinossauro'] = '🦕',['Spaghetti Tualetti'] = '🚽',
+    ['Chicleteira Bicicleteira'] = '🚲',['Los Combinasionas'] = '⚒️',['Ketchuru and Musturu'] = '🍾',['Los Hotspotsitos'] = '☎️',
+    ['Los Nooo My Hotspotsitos'] = '🔔',['Esok Sekolah'] = '🏠',
 }
 
--- ESP OPTIMIZED
+-- == ОПТИМАЛЬНЫЙ ESP ==
 local espCache, esp3DRoot, heartbeatConnection = {}, nil, nil
 local camera = workspace.CurrentCamera
-local ESP_UPDATE_INTERVAL = 0.2
+local ESP_UPDATE_INTERVAL = 0.25
+local MAX_ESP_TARGETS = 24
 local lastESPUpdate = 0
 local function getRootPart(obj)
     if obj:IsA("BasePart") then return obj end
@@ -110,64 +81,53 @@ local function clearOldESP()
     end
 end
 local function createESP(obj)
-    local rootPart = getRootPart(obj)
-    if not rootPart then return nil end
+    local rootPart = getRootPart(obj) if not rootPart then return nil end
     local gui = Instance.new('BillboardGui')
-    gui.Adornee = rootPart
-    gui.Size = UDim2.new(0, 220, 0, 30)
-    gui.AlwaysOnTop = true
-    gui.MaxDistance = ESP_SETTINGS.MaxDistance
-    gui.LightInfluence = 0
-    gui.StudsOffset = Vector3.new(0, 3, 0)
+    gui.Adornee = rootPart gui.Size = UDim2.new(0,220,0,30) gui.AlwaysOnTop = true
+    gui.MaxDistance = ESP_SETTINGS.MaxDistance gui.LightInfluence = 0 gui.StudsOffset = Vector3.new(0,3,0)
     gui.Parent = esp3DRoot
-    local frame = Instance.new('Frame', gui)
-    frame.Size = UDim2.new(1,0,1,0)
-    frame.BackgroundColor3 = ESP_SETTINGS.BgColor
-    frame.BackgroundTransparency = 0.2
-    frame.BorderSizePixel = 0
+    local frame = Instance.new('Frame', gui); frame.Size = UDim2.new(1,0,1,0)
+    frame.BackgroundColor3 = ESP_SETTINGS.BgColor; frame.BackgroundTransparency = 0.2; frame.BorderSizePixel = 0
     Instance.new('UICorner', frame).CornerRadius = UDim.new(0,8)
     local border = Instance.new('UIStroke', frame)
-    border.Color = ESP_SETTINGS.Color
-    border.Thickness = 1.5
+    border.Color = ESP_SETTINGS.Color; border.Thickness = 1.5
     local textLabel = Instance.new('TextLabel', frame)
-    textLabel.Size = UDim2.new(1, -8, 1, -4)
-    textLabel.Position = UDim2.new(0, 4, 0, 2)
-    textLabel.BackgroundTransparency = 1
-    textLabel.TextColor3 = ESP_SETTINGS.TxtColor
-    textLabel.Font = ESP_SETTINGS.Font
-    textLabel.TextSize = ESP_SETTINGS.TextSize
-    textLabel.TextXAlignment = Enum.TextXAlignment.Center
-    textLabel.TextYAlignment = Enum.TextYAlignment.Center
-    textLabel.Text = OBJECT_EMOJIS[obj.Name].." "..obj.Name
-    textLabel.TextScaled = true
-    textLabel.ClipsDescendants = true
+    textLabel.Size = UDim2.new(1, -8, 1, -4); textLabel.Position = UDim2.new(0,4,0,2)
+    textLabel.BackgroundTransparency = 1; textLabel.TextColor3 = ESP_SETTINGS.TxtColor; textLabel.Font = ESP_SETTINGS.Font
+    textLabel.TextSize = ESP_SETTINGS.TextSize; textLabel.TextXAlignment = Enum.TextXAlignment.Center
+    textLabel.TextYAlignment = Enum.TextYAlignment.Center; textLabel.Text = OBJECT_EMOJIS[obj.Name].." "..obj.Name
+    textLabel.TextScaled = true; textLabel.ClipsDescendants = true
     return {gui=gui, rootPart=rootPart}
 end
 local function updateESP()
     if tick() - lastESPUpdate < ESP_UPDATE_INTERVAL then return end
     lastESPUpdate = tick()
     clearOldESP()
+    local candidates = {}
     for _, obj in ipairs(workspace:GetDescendants()) do
         if isValidTarget(obj) then
-            local rootPart = getRootPart(obj)
-            if rootPart then
-                local dist = (rootPart.Position - camera.CFrame.Position).Magnitude
-                if dist <= ESP_SETTINGS.MaxDistance then
-                    if not espCache[obj] then
-                        local data = createESP(obj)
-                        if data then espCache[obj]=data end
-                    end
-                    local data = espCache[obj]
-                    if data then
-                        local _, onScreen = camera:WorldToViewportPoint(rootPart.Position)
-                        data.gui.Enabled = onScreen
-                    end
-                elseif espCache[obj] then
-                    espCache[obj].gui.Enabled = false
-                end
+            local root = getRootPart(obj)
+            if root then
+                table.insert(candidates, {obj=obj,dist=(root.Position-camera.CFrame.Position).Magnitude})
             end
         end
     end
+    table.sort(candidates, function(a,b) return a.dist<b.dist end)
+    for i,data in ipairs(candidates) do
+        if i > MAX_ESP_TARGETS then break end
+        local obj = data.obj
+        local root = getRootPart(obj)
+        if not espCache[obj] then
+            local d = createESP(obj)
+            if d then espCache[obj] = d end
+        end
+        local dat = espCache[obj]
+        if dat then
+            local _, onScreen = camera:WorldToViewportPoint(root.Position)
+            dat.gui.Enabled = onScreen and (data.dist <= ESP_SETTINGS.MaxDistance)
+        end
+    end
+    -- любые устаревшие отключаются clearOldESP()
 end
 local function startESP()
     if not heartbeatConnection then heartbeatConnection = RunService.Heartbeat:Connect(updateESP) end
@@ -177,7 +137,7 @@ local function stopESP()
     clearOldESP()
 end
 
--- CAMERA UP
+-- == CAMERAUP ==
 local isCameraRaised, cameraFollowConnection = false, nil
 local CAMERA_HEIGHT_OFFSET = 20
 local function enableFollowCamera()
@@ -201,7 +161,7 @@ local function disableFollowCamera()
     camera.CameraType = Enum.CameraType.Custom isCameraRaised = false
 end
 
--- FREEZE FPS
+-- == FPSDevourer ==
 local function removeAllAccessoriesFromCharacter()
     local char = player.Character
     if not char then return end
@@ -209,7 +169,7 @@ local function removeAllAccessoriesFromCharacter()
         if item:IsA('Accessory') or item:IsA('LayeredClothing') or item:IsA('Shirt')
         or item:IsA('ShirtGraphic') or item:IsA('Pants') or item:IsA('BodyColors') or item:IsA('CharacterMesh') then
             pcall(function() item:Destroy() end)
-    end
+        end
     end
 end
 player.CharacterAdded:Connect(function() task.wait(0.2) removeAllAccessoriesFromCharacter() end)
@@ -230,8 +190,8 @@ do
     player.CharacterAdded:Connect(function() FPSDevourer.running=false FPSDevourer._stop=true end)
 end
 
--- UI BLOCK
-local uiRoot, sidebar, btnESP, btnCam, btnFreeze, minimizeButton, closeButton, grad, btnSelect, btnPlayer, btnTroll
+-- == UI ==
+local uiRoot, sidebar, btnESP, btnCam, btnFreeze, btnSelect, btnPlayer, btnTroll
 local selectedPlayer = nil
 
 local function makeMenuButton(text, icon, isOn)
@@ -281,38 +241,6 @@ local function buildUI()
     grad.Offset = Vector2.new(-1.1,0)
     TweenService:Create(grad,TweenInfo.new(2,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut,-1,true),{Offset=Vector2.new(1.1,0)}):Play()
 
-    local header = Instance.new('Frame',sidebar)
-    header.Size = UDim2.new(1,0,0,32)
-    header.BackgroundTransparency = 1
-    local titleLabel = Instance.new('TextLabel',header)
-    titleLabel.Text = 'Purple ESP'
-    titleLabel.Font = Enum.Font.GothamBold
-    titleLabel.TextSize = 16
-    titleLabel.TextColor3 = UI_THEME.Text
-    titleLabel.BackgroundTransparency = 1
-    titleLabel.Size = UDim2.new(1,-68,1,0)
-    titleLabel.Position = UDim2.new(0,10,0,0)
-    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-    minimizeButton = Instance.new('TextButton',header)
-    minimizeButton.Text = '⎯'
-    minimizeButton.Font = Enum.Font.GothamBlack
-    minimizeButton.TextSize = 14
-    minimizeButton.TextColor3 = UI_THEME.Text
-    minimizeButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    minimizeButton.BackgroundTransparency = 0.5
-    minimizeButton.Size = UDim2.new(0, 24, 0, 24)
-    minimizeButton.Position = UDim2.new(1, -54, 0.5, -12)
-    closeButton = Instance.new('TextButton',header)
-    closeButton.Text = '✕'
-    closeButton.Font = Enum.Font.GothamBlack
-    closeButton.TextSize = 15
-    closeButton.TextColor3 = Color3.fromRGB(220, 120, 145)
-    closeButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    closeButton.BackgroundTransparency = 0.5
-    closeButton.Size = UDim2.new(0, 24, 0, 24)
-    closeButton.Position = UDim2.new(1, -26, 0.5, -12)
-
     local buttonArea = Instance.new('Frame',sidebar)
     buttonArea.BackgroundTransparency = 1
     buttonArea.Position = UDim2.new(0, 10, 0, 38)
@@ -320,7 +248,6 @@ local function buildUI()
     local layout = Instance.new("UIListLayout",buttonArea)
     layout.FillDirection = Enum.FillDirection.Vertical
     layout.Padding = UDim.new(0,8)
-    layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
     btnFreeze = makeMenuButton("Freeze FPS", ICONS.Zap, false) btnFreeze.Name = "FreezeFPS"
     btnESP = makeMenuButton("ESP",ICONS.Eye,true) btnESP.Name = "ESP"
@@ -337,31 +264,16 @@ local function buildUI()
     btnTroll.Parent = buttonArea
 
     btnESP.MouseButton1Click:Connect(function()
-        if heartbeatConnection then
-            stopESP()
-            btnESP.BackgroundColor3 = UI_THEME.ButtonOff
-        else
-            startESP()
-            btnESP.BackgroundColor3 = UI_THEME.ButtonOn
-        end
+        if heartbeatConnection then stopESP(); btnESP.BackgroundColor3 = UI_THEME.ButtonOff
+        else startESP(); btnESP.BackgroundColor3 = UI_THEME.ButtonOn end
     end)
     btnFreeze.MouseButton1Click:Connect(function()
-        if FPSDevourer.running then
-            FPSDevourer:Stop()
-            btnFreeze.BackgroundColor3 = UI_THEME.ButtonOff
-        else
-            FPSDevourer:Start()
-            btnFreeze.BackgroundColor3 = UI_THEME.ButtonOn
-        end
+        if FPSDevourer.running then FPSDevourer:Stop() btnFreeze.BackgroundColor3 = UI_THEME.ButtonOff
+        else FPSDevourer:Start() btnFreeze.BackgroundColor3 = UI_THEME.ButtonOn end
     end)
     btnCam.MouseButton1Click:Connect(function()
-        if isCameraRaised then
-            disableFollowCamera()
-            btnCam.BackgroundColor3 = UI_THEME.ButtonOff
-        else
-            enableFollowCamera()
-            btnCam.BackgroundColor3 = UI_THEME.ButtonOn
-        end
+        if isCameraRaised then disableFollowCamera() btnCam.BackgroundColor3 = UI_THEME.ButtonOff
+        else enableFollowCamera() btnCam.BackgroundColor3 = UI_THEME.ButtonOn end
         btnCam.Text = "   CameraUP (R)"
     end)
 
