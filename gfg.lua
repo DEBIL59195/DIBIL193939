@@ -66,13 +66,11 @@ local UI_THEME = {
     ButtonOn = Color3.fromRGB(40, 160, 120),
     ButtonOff = Color3.fromRGB(160, 60, 80),
 }
-
 local ICONS = {
     Zap = "rbxassetid://7733911822",
     Eye = "rbxassetid://7733745385",
     Camera = "rbxassetid://7733871300",
 }
-
 local ESP_SETTINGS = {
     MaxDistance = 500,
     Font = Enum.Font.GothamBold,
@@ -81,14 +79,21 @@ local ESP_SETTINGS = {
     TxtColor = Color3.fromRGB(225, 210, 255),
     TextSize = 16,
 }
-
 local OBJECT_EMOJIS = {
-    ['La Vacca Saturno Saturnita'] = '🐮',['Nooo My Hotspot'] = '👽',['La Supreme Combinasion'] = '🔫',['Ketupat Kepat'] = '⚰️',['Graipuss Medussi'] = '🦑',['Torrtuginni Dragonfrutini'] = '🐢',['Pot Hotspot'] = ' 📱',['La Grande Combinasion'] = '❗️',['Garama and Madundung'] = '🥫',['Secret Lucky Block'] = '⬛️',['Strawberry Elephant'] = '🐘',['Nuclearo Dinossauro'] = '🦕',['Spaghetti Tualetti'] = '🚽',['Chicleteira Bicicleteira'] = '🚲',['Los Combinasionas'] = '⚒️',['Ketchuru and Musturu'] = '🍾',['Los Hotspotsitos'] = '☎️',['Los Nooo My Hotspotsitos'] = '🔔',['Esok Sekolah'] = '🏠',
+    ['La Vacca Saturno Saturnita'] = '🐮', ['Nooo My Hotspot'] = '👽',
+    ['La Supreme Combinasion'] = '🔫',['Ketupat Kepat'] = '⚰️', ['Graipuss Medussi'] = '🦑',
+    ['Torrtuginni Dragonfrutini'] = '🐢', ['Pot Hotspot'] = ' 📱', ['La Grande Combinasion'] = '❗️',
+    ['Garama and Madundung'] = '🥫', ['Secret Lucky Block'] = '⬛️', ['Strawberry Elephant'] = '🐘',
+    ['Nuclearo Dinossauro'] = '🦕', ['Spaghetti Tualetti'] = '🚽', ['Chicleteira Bicicleteira'] = '🚲',
+    ['Los Combinasionas'] = '⚒️', ['Ketchuru and Musturu'] = '🍾', ['Los Hotspotsitos'] = '☎️',
+    ['Los Nooo My Hotspotsitos'] = '🔔', ['Esok Sekolah'] = '🏠',
 }
 
--- ESP
+-- ESP OPTIMIZED
 local espCache, esp3DRoot, heartbeatConnection = {}, nil, nil
 local camera = workspace.CurrentCamera
+local ESP_UPDATE_INTERVAL = 0.2
+local lastESPUpdate = 0
 local function getRootPart(obj)
     if obj:IsA("BasePart") then return obj end
     if obj:IsA("Model") then
@@ -115,13 +120,15 @@ local function createESP(obj)
     gui.LightInfluence = 0
     gui.StudsOffset = Vector3.new(0, 3, 0)
     gui.Parent = esp3DRoot
-    local frame = Instance.new('Frame', gui); frame.Size = UDim2.new(1,0,1,0)
+    local frame = Instance.new('Frame', gui)
+    frame.Size = UDim2.new(1,0,1,0)
     frame.BackgroundColor3 = ESP_SETTINGS.BgColor
     frame.BackgroundTransparency = 0.2
     frame.BorderSizePixel = 0
     Instance.new('UICorner', frame).CornerRadius = UDim.new(0,8)
     local border = Instance.new('UIStroke', frame)
-    border.Color = ESP_SETTINGS.Color border.Thickness = 1.5
+    border.Color = ESP_SETTINGS.Color
+    border.Thickness = 1.5
     local textLabel = Instance.new('TextLabel', frame)
     textLabel.Size = UDim2.new(1, -8, 1, -4)
     textLabel.Position = UDim2.new(0, 4, 0, 2)
@@ -129,12 +136,16 @@ local function createESP(obj)
     textLabel.TextColor3 = ESP_SETTINGS.TxtColor
     textLabel.Font = ESP_SETTINGS.Font
     textLabel.TextSize = ESP_SETTINGS.TextSize
-    textLabel.TextXAlignment = Enum.TextXAlignment.Center textLabel.TextYAlignment = Enum.TextYAlignment.Center
+    textLabel.TextXAlignment = Enum.TextXAlignment.Center
+    textLabel.TextYAlignment = Enum.TextYAlignment.Center
     textLabel.Text = OBJECT_EMOJIS[obj.Name].." "..obj.Name
-    textLabel.TextScaled = true textLabel.ClipsDescendants = true
+    textLabel.TextScaled = true
+    textLabel.ClipsDescendants = true
     return {gui=gui, rootPart=rootPart}
 end
 local function updateESP()
+    if tick() - lastESPUpdate < ESP_UPDATE_INTERVAL then return end
+    lastESPUpdate = tick()
     clearOldESP()
     for _, obj in ipairs(workspace:GetDescendants()) do
         if isValidTarget(obj) then
@@ -166,7 +177,7 @@ local function stopESP()
     clearOldESP()
 end
 
--- CAMERA
+-- CAMERA UP
 local isCameraRaised, cameraFollowConnection = false, nil
 local CAMERA_HEIGHT_OFFSET = 20
 local function enableFollowCamera()
@@ -198,7 +209,7 @@ local function removeAllAccessoriesFromCharacter()
         if item:IsA('Accessory') or item:IsA('LayeredClothing') or item:IsA('Shirt')
         or item:IsA('ShirtGraphic') or item:IsA('Pants') or item:IsA('BodyColors') or item:IsA('CharacterMesh') then
             pcall(function() item:Destroy() end)
-        end
+    end
     end
 end
 player.CharacterAdded:Connect(function() task.wait(0.2) removeAllAccessoriesFromCharacter() end)
@@ -210,7 +221,7 @@ do
     local function equip() local c=player.Character local b=player:FindFirstChild('Backpack') if not c or not b then return false end local t=b:FindFirstChild(TOOL_NAME) if t then t.Parent=c return true end return false end
     local function unequip() local c=player.Character local b=player:FindFirstChild('Backpack') if not c or not b then return false end local t=c:FindFirstChild(TOOL_NAME) if t then t.Parent=b return true end return false end
     function FPSDevourer:Start()
-        if FPSDevourer.running then return end FPSDevourer.running=true; FPSDevourer._stop=false;
+        if FPSDevourer.running then return end FPSDevourer.running=true; FPSDevourer._stop=false
         task.spawn(function()
             while FPSDevourer.running and not FPSDevourer._stop do equip(); task.wait(0.035); unequip(); task.wait(0.035); end
         end)
@@ -219,7 +230,7 @@ do
     player.CharacterAdded:Connect(function() FPSDevourer.running=false FPSDevourer._stop=true end)
 end
 
--- ===== GUI =====
+-- UI BLOCK
 local uiRoot, sidebar, btnESP, btnCam, btnFreeze, minimizeButton, closeButton, grad, btnSelect, btnPlayer, btnTroll
 local selectedPlayer = nil
 
@@ -325,8 +336,6 @@ local function buildUI()
     btnPlayer.Parent = buttonArea
     btnTroll.Parent = buttonArea
 
-    -- actions, drags, minimize, etc. код не изменяется...
-
     btnESP.MouseButton1Click:Connect(function()
         if heartbeatConnection then
             stopESP()
@@ -430,7 +439,9 @@ local function buildUI()
         scroll.CanvasSize = UDim2.new(0,0,0,layout.AbsoluteContentSize.Y)
     end)
     btnPlayer.MouseButton1Click:Connect(function()
-        btnSelect.MouseButton1Click:Fire()
+        btnSelect.Visible = true
+        btnPlayer.Visible = false
+        btnTroll.Visible = false
     end)
     btnTroll.MouseButton1Click:Connect(function()
         if not selectedPlayer then return end
