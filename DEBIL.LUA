@@ -55,7 +55,9 @@ local TG_MAIN = {
         ["Los Nooo My Hotspotsitos"] = true,
         ["La Kark7658erkar Combinasion"] = true,
         ["Tralaledon"] = true,
-        ["Los Bros"] = true
+        ["Los Bros"] = true,
+        ["Los Bros"] = true,
+        ["Las sis"] = true
     }
 }
 
@@ -110,7 +112,8 @@ local OBJECT_INCOME = {
     ["Los Nooo My Hotspotsitos"] = "5M/s",
     ["La Kark767erkar Combinasion"] = "50M/s",
     ["Tralaledon"] = "50M/s",
-    ["Los Bros"] = "50M/s"
+    ["Los Bros"] = "50M/s",
+    ["Las Sis"] = "50M/s"
 }
 
 -- Множители мутаций и трейтов
@@ -173,7 +176,8 @@ local OBJECT_EMOJIS = {
     ["Los Nooo My Hotspotsitos"] = "🥔",
     ["La Kark666erkar Combinasion"] = "🥊",
     ["Tralaledon"] = "🦈",
-    ["Los Bros"] = "✊"
+    ["Los Bros"] = "✊"",
+    ["Las Sis"] = "👩"
 }
 
 -- Эмодзи для мутаций
@@ -218,7 +222,8 @@ local OBJECT_NAMES = {
     "Los Nooo My Hotspotsitos",
     "La Kark56656erkar Combinasion",
     "Los Bros",
-    "Tralaledon"
+    "Tralaledon",
+    "Las Sis"
 }
 
 -- Системные переменные
