@@ -184,7 +184,7 @@ local OBJECT_EMOJIS = {
     ["Tralaledon"] = "🦈",
     ["Los Bros"] = "✊",
     ["Las Sis"] = "👩",
-    ["Celularcini Viciosini"] = "🦾"
+    ["Celularcini Viciosini"] = "🦾",
     ["La Extinct Grande"] = "🦴",
     ["Los Chicleteiras"] = "💰"
 }
