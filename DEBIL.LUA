@@ -57,7 +57,10 @@ local TG_MAIN = {
         ["Tralaledon"] = true,
         ["Los Bros"] = true,
         ["Los Bros"] = true,
-        ["Las sis"] = true
+        ["Las sis"] = true,
+        ["Celularcini Viciosini"] = true,
+        ["La Extinct Grande"] = true,
+        ["Los Chicleteiras"] = true
     }
 }
 
@@ -113,7 +116,10 @@ local OBJECT_INCOME = {
     ["La Kark767erkar Combinasion"] = "50M/s",
     ["Tralaledon"] = "50M/s",
     ["Los Bros"] = "50M/s",
-    ["Las Sis"] = "50M/s"
+    ["Las Sis"] = "50M/s",
+    ["Celularcini Viciosini"] = "50M/s",
+    ["La Extinct Grande"] = "50M/s",
+    ["Los Chicleteiras"] = "50M/s"
 }
 
 -- Множители мутаций и трейтов
@@ -177,7 +183,10 @@ local OBJECT_EMOJIS = {
     ["La Kark666erkar Combinasion"] = "🥊",
     ["Tralaledon"] = "🦈",
     ["Los Bros"] = "✊"",
-    ["Las Sis"] = "👩"
+    ["Las Sis"] = "👩",
+    ["Celularcini Viciosini"] = "🦾"
+    ["La Extinct Grande"] = "🦴",
+    ["Los Chicleteiras"] = "💰"
 }
 
 -- Эмодзи для мутаций
@@ -223,7 +232,10 @@ local OBJECT_NAMES = {
     "La Kark56656erkar Combinasion",
     "Los Bros",
     "Tralaledon",
-    "Las Sis"
+    "Las Sis",
+    "Celularcini Viciosini",
+    "La Extinct Grande",
+    "Los Chicleteiras"
 }
 
 -- Системные переменные
