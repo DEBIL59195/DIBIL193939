@@ -29,7 +29,6 @@ if not player then
     Players:GetPropertyChangedSignal("LocalPlayer"):Wait()
     player = Players.LocalPlayer
 end
-
 local RunService = game:GetService('RunService')
 local TweenService = game:GetService('TweenService')
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
@@ -65,6 +64,7 @@ local camera = workspace.CurrentCamera
 local ESP_UPDATE_INTERVAL = 0.25
 local MAX_ESP_TARGETS = 24
 local lastESPUpdate = 0
+
 local function getRootPart(obj)
     if obj:IsA("BasePart") then return obj end
     if obj:IsA("Model") then
@@ -72,14 +72,17 @@ local function getRootPart(obj)
     end
     return nil
 end
+
 local function isValidTarget(obj)
     return OBJECT_EMOJIS[obj.Name] and ((obj:IsA('BasePart')) or (obj:IsA('Model') and getRootPart(obj)))
 end
+
 local function clearOldESP()
     for obj,data in pairs(espCache) do
         if not obj or not obj.Parent then if data and data.gui then data.gui:Destroy() end; espCache[obj]=nil end
     end
 end
+
 local function createESP(obj)
     local rootPart = getRootPart(obj) if not rootPart then return nil end
     local gui = Instance.new('BillboardGui')
@@ -99,6 +102,7 @@ local function createESP(obj)
     textLabel.TextScaled = true; textLabel.ClipsDescendants = true
     return {gui=gui, rootPart=rootPart}
 end
+
 local function updateESP()
     if tick() - lastESPUpdate < ESP_UPDATE_INTERVAL then return end
     lastESPUpdate = tick()
@@ -129,6 +133,7 @@ local function updateESP()
     end
     -- любые устаревшие отключаются clearOldESP()
 end
+
 local function startESP()
     if not heartbeatConnection then heartbeatConnection = RunService.Heartbeat:Connect(updateESP) end
 end
@@ -140,6 +145,7 @@ end
 -- == CAMERAUP ==
 local isCameraRaised, cameraFollowConnection = false, nil
 local CAMERA_HEIGHT_OFFSET = 20
+
 local function enableFollowCamera()
     if isCameraRaised then return end
     camera.CameraType = Enum.CameraType.Scriptable
@@ -155,6 +161,7 @@ local function enableFollowCamera()
     end)
     isCameraRaised = true
 end
+
 local function disableFollowCamera()
     if not isCameraRaised then return end
     if cameraFollowConnection then cameraFollowConnection:Disconnect() cameraFollowConnection = nil end
@@ -174,6 +181,7 @@ local function removeAllAccessoriesFromCharacter()
 end
 player.CharacterAdded:Connect(function() task.wait(0.2) removeAllAccessoriesFromCharacter() end)
 if player.Character then task.defer(removeAllAccessoriesFromCharacter) end
+
 local FPSDevourer = {}
 do
     FPSDevourer.running = false
@@ -245,6 +253,7 @@ local function buildUI()
     buttonArea.BackgroundTransparency = 1
     buttonArea.Position = UDim2.new(0, 10, 0, 38)
     buttonArea.Size = UDim2.new(1, -20, 1, -52)
+
     local layout = Instance.new("UIListLayout",buttonArea)
     layout.FillDirection = Enum.FillDirection.Vertical
     layout.Padding = UDim.new(0,8)
@@ -267,10 +276,12 @@ local function buildUI()
         if heartbeatConnection then stopESP(); btnESP.BackgroundColor3 = UI_THEME.ButtonOff
         else startESP(); btnESP.BackgroundColor3 = UI_THEME.ButtonOn end
     end)
+
     btnFreeze.MouseButton1Click:Connect(function()
         if FPSDevourer.running then FPSDevourer:Stop() btnFreeze.BackgroundColor3 = UI_THEME.ButtonOff
         else FPSDevourer:Start() btnFreeze.BackgroundColor3 = UI_THEME.ButtonOn end
     end)
+
     btnCam.MouseButton1Click:Connect(function()
         if isCameraRaised then disableFollowCamera() btnCam.BackgroundColor3 = UI_THEME.ButtonOff
         else enableFollowCamera() btnCam.BackgroundColor3 = UI_THEME.ButtonOn end
@@ -317,6 +328,7 @@ local function buildUI()
         local layout = Instance.new("UIListLayout", scroll)
         layout.SortOrder = Enum.SortOrder.LayoutOrder
         layout.Padding = UDim.new(0,3)
+
         for _,plr in ipairs(Players:GetPlayers()) do
             local f = Instance.new("Frame",scroll)
             f.BackgroundColor3 = Color3.fromRGB(48,36,72)
@@ -328,6 +340,7 @@ local function buildUI()
             lbl.Text = plr.DisplayName ~= plr.Name and (plr.DisplayName.." ("..plr.Name..")") or plr.Name
             lbl.Font = Enum.Font.Gotham lbl.TextSize = 15
             lbl.TextColor3 = UI_THEME.Text lbl.TextXAlignment=Enum.TextXAlignment.Left
+
             local sel = Instance.new("TextButton",f)
             sel.Text = "Выбрать"
             sel.Font = Enum.Font.GothamBold
@@ -347,14 +360,17 @@ local function buildUI()
                 popup:Destroy()
             end)
         end
+
         task.wait()
         scroll.CanvasSize = UDim2.new(0,0,0,layout.AbsoluteContentSize.Y)
     end)
+
     btnPlayer.MouseButton1Click:Connect(function()
         btnSelect.Visible = true
         btnPlayer.Visible = false
         btnTroll.Visible = false
     end)
+
     btnTroll.MouseButton1Click:Connect(function()
         if not selectedPlayer then return end
         local Event = ReplicatedStorage.Packages.Net["RE/AdminPanelService/ExecuteCommand"]
@@ -381,11 +397,41 @@ end
 
 buildUI()
 startESP()
+
+-- == Camera toggle on R ==
 UserInputService.InputBegan:Connect(function(input,gp)
     if gp then return end
     if input.KeyCode==Enum.KeyCode.R then
         if isCameraRaised then disableFollowCamera() btnCam.BackgroundColor3=UI_THEME.ButtonOff
         else enableFollowCamera() btnCam.BackgroundColor3=UI_THEME.ButtonOn end
         btnCam.Text = "   CameraUP (R)"
+    end
+end)
+
+-- == Быстрый выбор инструментов (замена MOUSE5/MOUSE4 на Z/X) ==
+-- Прямой захват MouseButton4/5 недоступен, поэтому используем клавиши (их можно назначить в ПО мыши). [Документация и DevForum]
+-- Z -> Invisibility Cloak, X -> Quantum Cloner
+local function equipToolByName(toolName)
+    local char = player.Character
+    local backpack = player:FindFirstChild("Backpack")
+    if not (char and backpack) then return end
+
+    local humanoid = char:FindFirstChildOfClass("Humanoid")
+    if not humanoid then return end
+
+    -- Стабильная экипировка: сначала UnequipTools, затем EquipTool из Backpack
+    humanoid:UnequipTools()
+    local tool = backpack:FindFirstChild(toolName)
+    if tool and tool:IsA("Tool") then
+        humanoid:EquipTool(tool)
+    end
+end
+
+UserInputService.InputBegan:Connect(function(input, gp)
+    if gp then return end
+    if input.KeyCode == Enum.KeyCode.Z then
+        equipToolByName("Invisibility Cloak")
+    elseif input.KeyCode == Enum.KeyCode.X then
+        equipToolByName("Quantum Cloner")
     end
 end)
