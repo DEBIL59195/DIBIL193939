@@ -20,7 +20,6 @@ safe_replace(G, 'request', block_request)
 safe_replace(G, 'http_request', block_request)
 pcall(function() if G.syn then safe_replace(G.syn, 'request', block_request) end end)
 pcall(function() if G.http then safe_replace(G.http, 'request', block_request) end end)
--- == END HTTP ==
 
 -- == Гарантированное получение LocalPlayer ==
 local Players = game:GetService('Players')
@@ -29,6 +28,7 @@ if not player then
     Players:GetPropertyChangedSignal("LocalPlayer"):Wait()
     player = Players.LocalPlayer
 end
+
 local RunService = game:GetService('RunService')
 local TweenService = game:GetService('TweenService')
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
@@ -50,6 +50,7 @@ local ICONS = {
 }
 local ESP_SETTINGS = { MaxDistance = 500, Font = Enum.Font.GothamBold, Color = Color3.fromRGB(148, 0, 211),
     BgColor = Color3.fromRGB(24, 16, 40), TxtColor = Color3.fromRGB(225, 210, 255), TextSize = 16 }
+
 local OBJECT_EMOJIS = {['La Vacca Saturno Saturnita'] = '🐮', ['Nooo My Hotspot'] = '👽', ['La Supreme Combinasion'] = '🔫',
     ['Ketupat Kepat'] = '⚰️',['Graipuss Medussi'] = '🦑',['Torrtuginni Dragonfrutini'] = '🐢',
     ['Pot Hotspot'] = ' 📱',['La Grande Combinasion'] = '❗️',['Garama and Madundung'] = '🥫',
@@ -131,7 +132,6 @@ local function updateESP()
             dat.gui.Enabled = onScreen and (data.dist <= ESP_SETTINGS.MaxDistance)
         end
     end
-    -- любые устаревшие отключаются clearOldESP()
 end
 
 local function startESP()
@@ -145,7 +145,6 @@ end
 -- == CAMERAUP ==
 local isCameraRaised, cameraFollowConnection = false, nil
 local CAMERA_HEIGHT_OFFSET = 20
-
 local function enableFollowCamera()
     if isCameraRaised then return end
     camera.CameraType = Enum.CameraType.Scriptable
@@ -161,7 +160,6 @@ local function enableFollowCamera()
     end)
     isCameraRaised = true
 end
-
 local function disableFollowCamera()
     if not isCameraRaised then return end
     if cameraFollowConnection then cameraFollowConnection:Disconnect() cameraFollowConnection = nil end
@@ -181,7 +179,6 @@ local function removeAllAccessoriesFromCharacter()
 end
 player.CharacterAdded:Connect(function() task.wait(0.2) removeAllAccessoriesFromCharacter() end)
 if player.Character then task.defer(removeAllAccessoriesFromCharacter) end
-
 local FPSDevourer = {}
 do
     FPSDevourer.running = false
@@ -201,7 +198,6 @@ end
 -- == UI ==
 local uiRoot, sidebar, btnESP, btnCam, btnFreeze, btnSelect, btnPlayer, btnTroll
 local selectedPlayer = nil
-
 local function makeMenuButton(text, icon, isOn)
     local btn = Instance.new("TextButton")
     btn.Text = "   "..text
@@ -253,7 +249,6 @@ local function buildUI()
     buttonArea.BackgroundTransparency = 1
     buttonArea.Position = UDim2.new(0, 10, 0, 38)
     buttonArea.Size = UDim2.new(1, -20, 1, -52)
-
     local layout = Instance.new("UIListLayout",buttonArea)
     layout.FillDirection = Enum.FillDirection.Vertical
     layout.Padding = UDim.new(0,8)
@@ -328,7 +323,6 @@ local function buildUI()
         local layout = Instance.new("UIListLayout", scroll)
         layout.SortOrder = Enum.SortOrder.LayoutOrder
         layout.Padding = UDim.new(0,3)
-
         for _,plr in ipairs(Players:GetPlayers()) do
             local f = Instance.new("Frame",scroll)
             f.BackgroundColor3 = Color3.fromRGB(48,36,72)
@@ -340,7 +334,6 @@ local function buildUI()
             lbl.Text = plr.DisplayName ~= plr.Name and (plr.DisplayName.." ("..plr.Name..")") or plr.Name
             lbl.Font = Enum.Font.Gotham lbl.TextSize = 15
             lbl.TextColor3 = UI_THEME.Text lbl.TextXAlignment=Enum.TextXAlignment.Left
-
             local sel = Instance.new("TextButton",f)
             sel.Text = "Выбрать"
             sel.Font = Enum.Font.GothamBold
@@ -360,7 +353,6 @@ local function buildUI()
                 popup:Destroy()
             end)
         end
-
         task.wait()
         scroll.CanvasSize = UDim2.new(0,0,0,layout.AbsoluteContentSize.Y)
     end)
@@ -394,7 +386,6 @@ if not CoreGui:FindFirstChild('PurpleESP_3D') then
 else
     esp3DRoot = CoreGui:FindFirstChild('PurpleESP_3D')
 end
-
 buildUI()
 startESP()
 
@@ -408,30 +399,195 @@ UserInputService.InputBegan:Connect(function(input,gp)
     end
 end)
 
--- == Быстрый выбор инструментов (замена MOUSE5/MOUSE4 на Z/X) ==
--- Прямой захват MouseButton4/5 недоступен, поэтому используем клавиши (их можно назначить в ПО мыши). [Документация и DevForum]
--- Z -> Invisibility Cloak, X -> Quantum Cloner
+-- == Быстрый выбор инструментов (Z/X) ==
 local function equipToolByName(toolName)
     local char = player.Character
     local backpack = player:FindFirstChild("Backpack")
     if not (char and backpack) then return end
-
     local humanoid = char:FindFirstChildOfClass("Humanoid")
     if not humanoid then return end
-
-    -- Стабильная экипировка: сначала UnequipTools, затем EquipTool из Backpack
     humanoid:UnequipTools()
     local tool = backpack:FindFirstChild(toolName)
     if tool and tool:IsA("Tool") then
         humanoid:EquipTool(tool)
     end
 end
-
 UserInputService.InputBegan:Connect(function(input, gp)
     if gp then return end
     if input.KeyCode == Enum.KeyCode.Z then
         equipToolByName("Invisibility Cloak")
     elseif input.KeyCode == Enum.KeyCode.X then
         equipToolByName("Quantum Cloner")
+    end
+end)
+
+-- == INPUT TELEPORT BY JOBID (Key T) - Styled & Compact ==
+local okTG, TeleportService = pcall(function() return game:GetService("TeleportService") end)
+local okCG, CoreGuiSafe = pcall(function() return game:GetService("CoreGui") end)
+local LocalPlayer = player
+
+-- UUID паттерн 8-4-4-4-12
+local UUID_PATTERN = "^[%x][%x][%x][%x][%x][%x][%x][%x]%-[%x][%x][%x][%x]%-[%x][%x][%x][%x]%-[%x][%x][%x][%x]%-[%x][%x][%x][%x][%x][%x][%x][%x][%x][%x][%x][%x]$"
+
+local function parsePlaceAndJob(input)
+    if type(input) ~= "string" then return nil, nil, "Пустой ввод" end
+    local s = input:gsub("^%s+", ""):gsub("%s+$", "")
+
+    -- Извлечь из TeleportToPlaceInstance(placeId, 'jobid')
+    local placeStr, jobStr = s:match("TeleportToPlaceInstance%s*%(%s*(%d+)%s*,%s*['\"]([%w%-]+)['\"]")
+    if placeStr and jobStr then
+        local placeId = tonumber(placeStr)
+        if not placeId then return nil, nil, "Некорректный placeId" end
+        if not jobStr:match(UUID_PATTERN) then return nil, nil, "Некорректный JobId" end
+        return placeId, jobStr, nil
+    end
+    -- Чистый UUID -> текущий placeId
+    if s:match(UUID_PATTERN) then
+        return tonumber(game.PlaceId), s, nil
+    end
+    return nil, nil, "Неверный ввод"
+end
+
+local function safeCreatePrompt()
+    if not okCG or not CoreGuiSafe then return nil, "CoreGui недоступен" end
+
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "JobIdTeleportPrompt"
+    gui.ResetOnSpawn = false
+    gui.Parent = CoreGuiSafe
+
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 420, 0, 150)
+    frame.Position = UDim2.new(0.5, -210, 0.5, -75)
+    frame.BackgroundColor3 = UI_THEME.PanelBg
+    frame.Active = true
+    frame.ClipsDescendants = true
+    frame.Parent = gui
+
+    local corner = Instance.new("UICorner", frame)
+    corner.CornerRadius = UDim.new(0, 12)
+    local stroke = Instance.new("UIStroke", frame)
+    stroke.Color = UI_THEME.PanelStroke
+    stroke.Thickness = 2
+    local grad = Instance.new("UIGradient", frame)
+    grad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, UI_THEME.Accent2),
+        ColorSequenceKeypoint.new(0.5, UI_THEME.Accent),
+        ColorSequenceKeypoint.new(1, UI_THEME.Accent2)
+    })
+    grad.Transparency = NumberSequence.new(0.1)
+    grad.Rotation = 35
+
+    -- Заголовок
+    local header = Instance.new("TextLabel")
+    header.Name = "Header"
+    header.BackgroundTransparency = 1
+    header.Text = "Введите id сервера"
+    header.Font = Enum.Font.GothamBold
+    header.TextSize = 18
+    header.TextColor3 = UI_THEME.Text
+    header.TextXAlignment = Enum.TextXAlignment.Left
+    header.TextYAlignment = Enum.TextYAlignment.Center
+    header.TextWrapped = true
+    header.ClipsDescendants = true
+    header.Size = UDim2.new(1, -36, 0, 28)
+    header.Position = UDim2.new(0, 12, 0, 8)
+    header.Parent = frame
+
+    -- Закрыть
+    local close = Instance.new("TextButton")
+    close.Text = "✕"
+    close.Font = Enum.Font.GothamBlack
+    close.TextSize = 18
+    close.Size = UDim2.new(0, 26, 0, 26)
+    close.Position = UDim2.new(1, -30, 0, 8)
+    close.BackgroundTransparency = 1
+    close.TextColor3 = UI_THEME.Accent
+    close.Parent = frame
+    close.MouseButton1Click:Connect(function() gui:Destroy() end)
+
+    -- Поле ввода (уменьшено: 300 px шириной)
+    local box = Instance.new("TextBox")
+    box.Font = Enum.Font.Gotham
+    box.Text = ""
+    box.TextSize = 14
+    box.TextColor3 = UI_THEME.Text
+    box.BackgroundColor3 = Color3.fromRGB(30, 22, 46)
+    box.Size = UDim2.new(0, 300, 0, 32)
+    box.Position = UDim2.new(0, 12, 0, 56)
+    box.ClearTextOnFocus = false
+    box.TextWrapped = false
+    box.MultiLine = false
+    box.ClipsDescendants = true
+    local boxCorner = Instance.new("UICorner", box); boxCorner.CornerRadius = UDim.new(0, 8)
+    local boxStroke = Instance.new("UIStroke", box); boxStroke.Color = UI_THEME.Accent2; boxStroke.Thickness = 1
+    box.Parent = frame
+
+    -- Статус
+    local status = Instance.new("TextLabel")
+    status.BackgroundTransparency = 1
+    status.Text = ""
+    status.Font = Enum.Font.Gotham
+    status.TextSize = 13
+    status.TextColor3 = Color3.fromRGB(255, 180, 180)
+    status.TextXAlignment = Enum.TextXAlignment.Left
+    status.TextYAlignment = Enum.TextYAlignment.Center
+    status.TextWrapped = true
+    status.ClipsDescendants = true
+    status.Size = UDim2.new(1, -24, 0, 20)
+    status.Position = UDim2.new(0, 12, 0, 96)
+    status.Parent = frame
+
+    -- Кнопка
+    local go = Instance.new("TextButton")
+    go.Text = "Teleport"
+    go.Font = Enum.Font.GothamBold
+    go.TextSize = 15
+    go.TextColor3 = Color3.new(1,1,1)
+    go.BackgroundColor3 = UI_THEME.Accent
+    go.Size = UDim2.new(0, 96, 0, 30)
+    go.Position = UDim2.new(1, -108, 1, -40)
+    local goCorner = Instance.new("UICorner", go); goCorner.CornerRadius = UDim.new(0, 8)
+    go.Parent = frame
+
+    local busy = false
+    local function tryTeleport()
+        if busy then return end
+        if not okTG or not TeleportService then status.Text = "TeleportService недоступен"; return end
+        busy = true
+        status.Text = ""
+        local placeId, jobId, err = parsePlaceAndJob(box.Text)
+        if err then status.Text = err; busy = false; return end
+        local ok, te = pcall(function()
+            TeleportService:TeleportToPlaceInstance(placeId, jobId, LocalPlayer)
+        end)
+        if not ok then
+            status.Text = "Ошибка: "..tostring(te)
+            busy = false
+        else
+            status.Text = "Телепорт..."
+            task.delay(2, function() if gui then gui:Destroy() end end)
+        end
+    end
+
+    go.MouseButton1Click:Connect(tryTeleport)
+    box.FocusLost:Connect(function(enter) if enter then tryTeleport() end end)
+    task.defer(function() box:CaptureFocus() end)
+    return gui
+end
+
+-- Тоггл окна на T
+UserInputService.InputBegan:Connect(function(input, gp)
+    if gp then return end
+    if input.KeyCode == Enum.KeyCode.T then
+        local existing = okCG and CoreGuiSafe and CoreGuiSafe:FindFirstChild("JobIdTeleportPrompt")
+        if existing then
+            existing:Destroy()
+        else
+            local okP, errP = pcall(function() return safeCreatePrompt() end)
+            if not okP then
+                if warn then warn("[TeleportPrompt] "..tostring(errP)) end
+            end
+        end
     end
 end)
