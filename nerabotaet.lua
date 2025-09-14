@@ -97,8 +97,8 @@ local function createESP(obj)
     border.Color = ESP_SETTINGS.Color; border.Thickness = 1.5
     local textLabel = Instance.new('TextLabel', frame)
     textLabel.Size = UDim2.new(1, -8, 1, -4); textLabel.Position = UDim2.new(0,4,0,2)
-    textLabel.BackgroundTransparency = 1; textLabel.TextColor3 = ESP_SETTINGS.TxtColor; textLabel.Font = ESP_SETTINGS.Font
-    textLabel.TextSize = ESP_SETTINGS.TextSize; textLabel.TextXAlignment = Enum.TextXAlignment.Center
+    textLabel.BackgroundTransparency = 1; textLabel.TextColor3 = ESP_SETTINGS.TxtColor; textLabel.Font = Enum.Font.GothamBold
+    textLabel.TextSize = 16; textLabel.TextXAlignment = Enum.TextXAlignment.Center
     textLabel.TextYAlignment = Enum.TextYAlignment.Center; textLabel.Text = OBJECT_EMOJIS[obj.Name].." "..obj.Name
     textLabel.TextScaled = true; textLabel.ClipsDescendants = true
     return {gui=gui, rootPart=rootPart}
@@ -421,7 +421,7 @@ UserInputService.InputBegan:Connect(function(input, gp)
     end
 end)
 
--- == INPUT TELEPORT BY JOBID (Key T) - Styled & Compact ==
+-- == INPUT TELEPORT BY JOBID (Key T) - Centered & No AutoFocus ==
 local okTG, TeleportService = pcall(function() return game:GetService("TeleportService") end)
 local okCG, CoreGuiSafe = pcall(function() return game:GetService("CoreGui") end)
 local LocalPlayer = player
@@ -457,8 +457,9 @@ local function safeCreatePrompt()
     gui.Parent = CoreGuiSafe
 
     local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(0, 420, 0, 150)
-    frame.Position = UDim2.new(0.5, -210, 0.5, -75)
+    frame.Size = UDim2.new(0, 440, 0, 160)
+    frame.AnchorPoint = Vector2.new(0.5, 0.5) -- центр якоря [симметрия]
+    frame.Position = UDim2.new(0.5, 0, 0.5, 0) -- ровно по центру экрана
     frame.BackgroundColor3 = UI_THEME.PanelBg
     frame.Active = true
     frame.ClipsDescendants = true
@@ -491,7 +492,7 @@ local function safeCreatePrompt()
     header.TextWrapped = true
     header.ClipsDescendants = true
     header.Size = UDim2.new(1, -36, 0, 28)
-    header.Position = UDim2.new(0, 12, 0, 8)
+    header.Position = UDim2.new(0, 12, 0, 10)
     header.Parent = frame
 
     -- Закрыть
@@ -506,7 +507,15 @@ local function safeCreatePrompt()
     close.Parent = frame
     close.MouseButton1Click:Connect(function() gui:Destroy() end)
 
-    -- Поле ввода (уменьшено: 300 px шириной)
+    -- Центрированная область ввода
+    local inputRow = Instance.new("Frame")
+    inputRow.BackgroundTransparency = 1
+    inputRow.Size = UDim2.new(1, -24, 0, 36)
+    inputRow.AnchorPoint = Vector2.new(0.5, 0.5)
+    inputRow.Position = UDim2.new(0.5, 0, 0.5, -4) -- ровно по центру по вертикали
+    inputRow.Parent = frame
+
+    -- Поле ввода (симметрично по центру)
     local box = Instance.new("TextBox")
     box.Font = Enum.Font.Gotham
     box.Text = ""
@@ -514,14 +523,15 @@ local function safeCreatePrompt()
     box.TextColor3 = UI_THEME.Text
     box.BackgroundColor3 = Color3.fromRGB(30, 22, 46)
     box.Size = UDim2.new(0, 300, 0, 32)
-    box.Position = UDim2.new(0, 12, 0, 56)
+    box.AnchorPoint = Vector2.new(0.5, 0.5)
+    box.Position = UDim2.new(0.5, 0, 0.5, 0) -- центр в родителе
     box.ClearTextOnFocus = false
     box.TextWrapped = false
     box.MultiLine = false
     box.ClipsDescendants = true
     local boxCorner = Instance.new("UICorner", box); boxCorner.CornerRadius = UDim.new(0, 8)
     local boxStroke = Instance.new("UIStroke", box); boxStroke.Color = UI_THEME.Accent2; boxStroke.Thickness = 1
-    box.Parent = frame
+    box.Parent = inputRow
 
     -- Статус
     local status = Instance.new("TextLabel")
@@ -535,7 +545,7 @@ local function safeCreatePrompt()
     status.TextWrapped = true
     status.ClipsDescendants = true
     status.Size = UDim2.new(1, -24, 0, 20)
-    status.Position = UDim2.new(0, 12, 0, 96)
+    status.Position = UDim2.new(0, 12, 1, -46)
     status.Parent = frame
 
     -- Кнопка
@@ -545,10 +555,16 @@ local function safeCreatePrompt()
     go.TextSize = 15
     go.TextColor3 = Color3.new(1,1,1)
     go.BackgroundColor3 = UI_THEME.Accent
-    go.Size = UDim2.new(0, 96, 0, 30)
-    go.Position = UDim2.new(1, -108, 1, -40)
+    go.Size = UDim2.new(0, 110, 0, 30)
+    go.AnchorPoint = Vector2.new(1, 1)
+    go.Position = UDim2.new(1, -12, 1, -10)
     local goCorner = Instance.new("UICorner", go); goCorner.CornerRadius = UDim.new(0, 8)
     go.Parent = frame
+
+    -- Логика телепорта
+    local function parsePlaceAndJobLocal(input)
+        return parsePlaceAndJob(input)
+    end
 
     local busy = false
     local function tryTeleport()
@@ -556,7 +572,7 @@ local function safeCreatePrompt()
         if not okTG or not TeleportService then status.Text = "TeleportService недоступен"; return end
         busy = true
         status.Text = ""
-        local placeId, jobId, err = parsePlaceAndJob(box.Text)
+        local placeId, jobId, err = parsePlaceAndJobLocal(box.Text)
         if err then status.Text = err; busy = false; return end
         local ok, te = pcall(function()
             TeleportService:TeleportToPlaceInstance(placeId, jobId, LocalPlayer)
@@ -572,7 +588,8 @@ local function safeCreatePrompt()
 
     go.MouseButton1Click:Connect(tryTeleport)
     box.FocusLost:Connect(function(enter) if enter then tryTeleport() end end)
-    task.defer(function() box:CaptureFocus() end)
+
+    -- ВАЖНО: автофокус отключён, чтобы 'T' не попадала в поле [21]
     return gui
 end
 
