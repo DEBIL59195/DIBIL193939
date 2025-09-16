@@ -507,7 +507,7 @@ local function safeCreatePrompt()
     local header = Instance.new("TextLabel")
     header.Name = "Header"
     header.BackgroundTransparency = 1
-    header.Text = "Введите placeId и/или JobId"
+    header.Text = "Введите ID"
     header.Font = Enum.Font.GothamBold
     header.TextSize = 18
     header.TextColor3 = UI_THEME.Text
