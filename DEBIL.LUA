@@ -60,7 +60,8 @@ local TG_MAIN = {
         ["Las sis"] = true,
         ["Celularcini Viciosini"] = true,
         ["La Extinct Grande"] = true,
-        ["Los Chicleteiras"] = true
+        ["Los Chicleteiras"] = true,
+        ["Tacorita Bicicleta"] = true
     }
 }
 
@@ -87,7 +88,7 @@ end
 
 -- Доходы объектов (все значения в /s)
 local OBJECT_INCOME = {
-    ["La Vacca Saturno Saturnita"] = "250K/s",
+    ["La Vacca Saturno Saturnita"] = "300K/s",
     ["Chimpanzini Spiderini"] = "325K/s",
     ["Los Tralaleritos"] = "500K/s",
     ["Las Tralaleritas"] = "625K/s",
@@ -108,18 +109,19 @@ local OBJECT_INCOME = {
     ["Karkerkar Kurkur"] = "275K/s",
     ["Job Job Job Sahur"] = "700K/s",
     ["La Supreme Combinasion"] = "40M/s",
-    ["Nooo My Hotspot"] = "10M/s",
-    ["Spaghetti Tualetti"] = "7.5M/s",
+    ["Nooo My Hotspot"] = "1.5M/s",
+    ["Spaghetti Tualetti"] = "60M/s",
     ["Strawberry Elephant"] = "250M/s",
-    ["Ketchuru and Musturu"] = "50M/s",
+    ["Ketchuru and Musturu"] = "42.5M/s",
     ["Los Nooo My Hotspotsitos"] = "5M/s",
     ["La Kark767erkar Combinasion"] = "50M/s",
     ["Tralaledon"] = "50M/s",
-    ["Los Bros"] = "50M/s",
-    ["Las Sis"] = "50M/s",
-    ["Celularcini Viciosini"] = "50M/s",
-    ["La Extinct Grande"] = "50M/s",
-    ["Los Chicleteiras"] = "50M/s"
+    ["Los Bros"] = "27.5M/s",
+    ["Las Sis"] = "17.5M/s",
+    ["Celularcini Viciosini"] = "22.5M/s",
+    ["La Extinct Grande"] = "23.5M/s",
+    ["Los Chicleteiras"] = "7M/s",
+    ["Tacorita Bicicleta"] = "16.5M/s"
 }
 
 -- Множители мутаций и трейтов
@@ -186,7 +188,8 @@ local OBJECT_EMOJIS = {
     ["Las Sis"] = "👩",
     ["Celularcini Viciosini"] = "🦾",
     ["La Extinct Grande"] = "🦴",
-    ["Los Chicleteiras"] = "💰"
+    ["Los Chicleteiras"] = "💰",
+    ["Tacorita Bicicleta"] = "🌮"
 }
 
 -- Эмодзи для мутаций
@@ -235,7 +238,8 @@ local OBJECT_NAMES = {
     "Las Sis",
     "Celularcini Viciosini",
     "La Extinct Grande",
-    "Los Chicleteiras"
+    "Los Chicleteiras",
+    "Tacorita Bicicleta"
 }
 
 -- Системные переменные
