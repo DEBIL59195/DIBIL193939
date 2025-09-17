@@ -53,7 +53,7 @@ local OBJECT_EMOJIS = {['La Vacca Saturno Saturnita'] = '🐮', ['Nooo My Hotspo
     ['Ketupat Kepat'] = '⚰️',['Graipuss Medussi'] = '🦑',['Torrtuginni Dragonfrutini'] = '🐢',
     ['Pot Hotspot'] = ' 📱',['La Grande Combinasion'] = '❗️',['Garama and Madundung'] = '🥫',
     ['Secret Lucky Block'] = '⬛️',['Strawberry Elephant'] = '🐘',['Nuclearo Dinossauro'] = '🦕',['Spaghetti Tualetti'] = '🚽',
-    ['Chicleteira Bicicleteira'] = '🚲',['Los Combinasionas'] = '⚒️',['Ketchuru and Musturu'] = '🍾',['Los Hotspotsitos'] = '☎️',
+    ['Chicleteira Bicicleteira'] = '🚲',['Los Combinasionas'] = '⚒️',['Ketchuru and Musturu'] = '🍾',['Los Hotspotsitos'] = '☎️',['Tacorita Bicicleta'] = '🌮',
     ['Los Nooo My Hotspotsitos'] = '🔔',['Esok Sekolah'] = '🏠',['Los Bros'] = '✊',["Tralaledon"] = "🦈",["La Extinct Grande"] = "🦴",["Las Sis"] = "👧",["Los Chicleteiras"] = "🚳",["Celularcini Viciosini"] = "📢"
 }
 
