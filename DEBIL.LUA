@@ -46,9 +46,9 @@ local TG_MAIN = {
         ["Los Hotspotsitos"] = true,
         ["Esok Sekolah"] = true,
         ["La Supreme Combinasion"] = true,
-        ["Nooo My Hotspot"] = true,
+        ["No77ot"] = true,
         ["Ketupat Kepat"] = true,
-        ["Nooo My Hotspot"] = true,
+        ["Noo567tspot"] = true,
         ["Spaghetti Tualetti"] = true,
         ["Strawberry Elephant"] = true,
         ["Ketchuru and Musturu"] = true,
@@ -61,7 +61,8 @@ local TG_MAIN = {
         ["Celularcini Viciosini"] = true,
         ["La Extinct Grande"] = true,
         ["Los Chicleteiras"] = true,
-        ["Tacorita Bicicleta"] = true
+        ["Tacorita Bicicleta"] = true,
+        ["Tictac Sahur"] = true
     }
 }
 
@@ -109,7 +110,7 @@ local OBJECT_INCOME = {
     ["Karkerkar Kurkur"] = "275K/s",
     ["Job Job Job Sahur"] = "700K/s",
     ["La Supreme Combinasion"] = "40M/s",
-    ["Nooo My Hotspot"] = "1.5M/s",
+    ["Nooo My7777t"] = "1.5M/s",
     ["Spaghetti Tualetti"] = "60M/s",
     ["Strawberry Elephant"] = "250M/s",
     ["Ketchuru and Musturu"] = "42.5M/s",
@@ -121,7 +122,8 @@ local OBJECT_INCOME = {
     ["Celularcini Viciosini"] = "22.5M/s",
     ["La Extinct Grande"] = "23.5M/s",
     ["Los Chicleteiras"] = "7M/s",
-    ["Tacorita Bicicleta"] = "16.5M/s"
+    ["Tacorita Bicicleta"] = "16.5M/s"",
+    ["Tictac Sahur"] = "37M/s"
 }
 
 -- Множители мутаций и трейтов
@@ -173,7 +175,7 @@ local OBJECT_EMOJIS = {
     ["Agarrini la Palini"] = "🥄",
     ["Los Hotspotsitos"] = "☎️",
     ["Esok Sekolah"] = "🏠",
-    ["Nooo My Hotspot"] = "👽",
+    ["N777ot"] = "👽",
     ["Job Job Job Sahur"] = "⬜️",
     ["La Supreme Combinasion"] = "🔫",
     ["Admin Lucky Block"] = "🆘",
@@ -189,7 +191,8 @@ local OBJECT_EMOJIS = {
     ["Celularcini Viciosini"] = "🦾",
     ["La Extinct Grande"] = "🦴",
     ["Los Chicleteiras"] = "💰",
-    ["Tacorita Bicicleta"] = "🌮"
+    ["Tacorita Bicicleta"] = "🌮",
+    ["Tictac Sahur"] = "🕰"
 }
 
 -- Эмодзи для мутаций
@@ -223,7 +226,7 @@ local OBJECT_NAMES = {
     "Agarrini la Palini",
     "Los Hotspotsitos",
     "Esok Sekolah",
-    "Nooo My Hotspot",
+    "N7777ot",
     "Job Job Job Sahur",
     "La Supreme Combinasion",
     "Admin Lucky Block",
@@ -239,7 +242,8 @@ local OBJECT_NAMES = {
     "Celularcini Viciosini",
     "La Extinct Grande",
     "Los Chicleteiras",
-    "Tacorita Bicicleta"
+    "Tacorita Bicicleta",
+    "Tictac Sahur"
 }
 
 -- Системные переменные
