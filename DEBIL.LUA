@@ -122,7 +122,7 @@ local OBJECT_INCOME = {
     ["Celularcini Viciosini"] = "22.5M/s",
     ["La Extinct Grande"] = "23.5M/s",
     ["Los Chicleteiras"] = "7M/s",
-    ["Tacorita Bicicleta"] = "16.5M/s"",
+    ["Tacorita Bicicleta"] = "16.5M/s",
     ["Tictac Sahur"] = "37M/s"
 }
 
