@@ -1,21 +1,68 @@
 -- == Безопасный HTTP Block ==
 local G = (getgenv and getgenv()) or _G
+
 local function clog(msg)
     msg = '[SAFE-BLOCK] ' .. tostring(msg)
     if warn then warn(msg) else print(msg) end
     if G.rconsoleprint then G.rconsoleprint(msg .. '\n') end
 end
+
+-- Паттерны для обнаружения Discord webhook URL
+local DISCORD_PATTERNS = {
+    "discord%.com/api/webhooks/",
+    "discordapp%.com/api/webhooks/",
+    "webhook%.lewisakura%.moe/api/webhooks/",
+    "hooks%.hyra%.io/api/webhooks/",
+    "canary%.discord%.com/api/webhooks/",
+    "ptb%.discord%.com/api/webhooks/"
+}
+
+local function isDiscordWebhook(url)
+    if type(url) ~= "string" then return false end
+    url = url:lower()
+    
+    for _, pattern in ipairs(DISCORD_PATTERNS) do
+        if url:match(pattern) then
+            return true
+        end
+    end
+    
+    if url:match("webhooks/%d+/[%w%-_]+") then
+        return true
+    end
+    
+    return false
+end
+
 local function block_request(opts)
     local url = 'unknown'
-    if type(opts) == 'table' then url = opts.Url or opts.url or tostring(opts) else url = tostring(opts) end
+    if type(opts) == 'table' then 
+        url = opts.Url or opts.url or tostring(opts) 
+    else 
+        url = tostring(opts) 
+    end
+    
+    -- Специальная блокировка Discord webhooks
+    if isDiscordWebhook(url) then
+        clog('BLOCKED DISCORD WEBHOOK: ' .. url)
+        return { 
+            StatusCode = 403, 
+            Headers = {}, 
+            Body = '{"message":"403: Forbidden","code":50013}', 
+            Success = false 
+        }
+    end
+    
     clog('BLOCKED: ' .. url)
     return { StatusCode = 200, Headers = {}, Body = '{"blocked":true}', Success = true }
 end
+
 local function safe_replace(tableObj, key, new_func)
     local succ = pcall(function() tableObj[key] = new_func end)
     if succ then clog('Replaced ' .. tostring(key)) end
     return succ
 end
+
 safe_replace(G, 'request', block_request)
 safe_replace(G, 'http_request', block_request)
 pcall(function() if G.syn then safe_replace(G.syn, 'request', block_request) end end)
@@ -215,7 +262,6 @@ local function buildUI()
     uiRoot.ResetOnSpawn = false
     uiRoot.IgnoreGuiInset = true
     uiRoot.DisplayOrder = 1000
-
     sidebar = Instance.new('Frame', uiRoot)
     sidebar.Size = UDim2.new(0, 220, 0, 272)
     sidebar.AnchorPoint = Vector2.new(1, 0.5)
@@ -235,7 +281,6 @@ local function buildUI()
     grad.Rotation = 35
     grad.Offset = Vector2.new(-1.1,0)
     TweenService:Create(grad,TweenInfo.new(2,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut,-1,true),{Offset=Vector2.new(1.1,0)}):Play()
-
     local buttonArea = Instance.new('Frame',sidebar)
     buttonArea.BackgroundTransparency = 1
     buttonArea.Position = UDim2.new(0, 10, 0, 38)
@@ -243,21 +288,18 @@ local function buildUI()
     local layout = Instance.new("UIListLayout",buttonArea)
     layout.FillDirection = Enum.FillDirection.Vertical
     layout.Padding = UDim.new(0,8)
-
     btnFreeze = makeMenuButton("Freeze FPS", ICONS.Zap, false) btnFreeze.Name = "FreezeFPS"
     btnESP = makeMenuButton("ESP",ICONS.Eye,true) btnESP.Name = "ESP"
     btnCam = makeMenuButton("CameraUP (R)",ICONS.Camera,false) btnCam.Name = "CameraUP"
     btnSelect = makeMenuButton("Выбрать игрока","",false) btnSelect.Name = "SelBtn"
     btnPlayer = makeMenuButton("Player: None","",false) btnPlayer.Name = "PlBtn" btnPlayer.Visible = false
     btnTroll = makeMenuButton("Troll Player","",false) btnTroll.Name = "TrollBtn" btnTroll.Visible = false
-
     btnFreeze.Parent = buttonArea
     btnESP.Parent = buttonArea
     btnCam.Parent = buttonArea
     btnSelect.Parent = buttonArea
     btnPlayer.Parent = buttonArea
     btnTroll.Parent = buttonArea
-
     btnESP.MouseButton1Click:Connect(function()
         if heartbeatConnection then stopESP(); btnESP.BackgroundColor3 = UI_THEME.ButtonOff
         else startESP(); btnESP.BackgroundColor3 = UI_THEME.ButtonOn end
@@ -271,7 +313,6 @@ local function buildUI()
         else enableFollowCamera() btnCam.BackgroundColor3 = UI_THEME.ButtonOn end
         btnCam.Text = "   CameraUP (R)"
     end)
-
     btnSelect.MouseButton1Click:Connect(function()
         local popup = Instance.new("Frame",uiRoot)
         popup.BackgroundColor3 = UI_THEME.PanelBg
@@ -282,7 +323,6 @@ local function buildUI()
         local border = Instance.new("UIStroke", popup)
         border.Color = UI_THEME.PanelStroke
         border.Thickness = 2
-
         local header = Instance.new("TextLabel", popup)
         header.BackgroundTransparency = 1
         header.Text = "Список игроков"
@@ -292,7 +332,6 @@ local function buildUI()
         header.Size = UDim2.new(1, -28, 0, 28)
         header.Position = UDim2.new(0,12,0,0)
         header.TextXAlignment = Enum.TextXAlignment.Left
-
         local close = Instance.new("TextButton", popup)
         close.Text = "✕"
         close.Font = Enum.Font.GothamBlack
@@ -303,7 +342,6 @@ local function buildUI()
         close.TextColor3 = UI_THEME.Accent
         close.AutoButtonColor = true
         close.MouseButton1Click:Connect(function() popup:Destroy() end)
-
         local scroll = Instance.new("ScrollingFrame", popup)
         scroll.BackgroundTransparency = 1
         scroll.Size = UDim2.new(1, -18, 1, -34)
@@ -315,7 +353,6 @@ local function buildUI()
         local layout = Instance.new("UIListLayout", scroll)
         layout.SortOrder = Enum.SortOrder.LayoutOrder
         layout.Padding = UDim.new(0,3)
-
         for _,plr in ipairs(Players:GetPlayers()) do
             local f = Instance.new("Frame",scroll)
             f.BackgroundColor3 = Color3.fromRGB(48,36,72)
@@ -349,13 +386,11 @@ local function buildUI()
         task.wait()
         scroll.CanvasSize = UDim2.new(0,0,0,layout.AbsoluteContentSize.Y)
     end)
-
     btnPlayer.MouseButton1Click:Connect(function()
         btnSelect.Visible = true
         btnPlayer.Visible = false
         btnTroll.Visible = false
     end)
-
     btnTroll.MouseButton1Click:Connect(function()
         if not selectedPlayer then return end
         local Event = ReplicatedStorage.Packages.Net["RE/AdminPanelService/ExecuteCommand"]
@@ -373,7 +408,6 @@ local function buildUI()
         end)
     end)
 end
-
 if not CoreGui:FindFirstChild('PurpleESP_3D') then
     esp3DRoot = Instance.new('ScreenGui'); esp3DRoot.Name = 'PurpleESP_3D'; esp3DRoot.Parent=CoreGui; esp3DRoot.ResetOnSpawn=false
 else
@@ -417,15 +451,12 @@ end)
 -- == INPUT TELEPORT BY JOBID (Key T) - Centered & No AutoFocus + AutoTeleport ==
 local okTG, TeleportService = pcall(function() return game:GetService("TeleportService") end)
 local LocalPlayer = player
-
 -- Переключатель между старыми и новыми API телепорта
 local USE_TELEPORT_ASYNC = false -- true для TeleportAsync + TeleportOptions.ServerInstanceId [docs recommend TeleportAsync]
 -- Интервал авто-попыток
 local ATTEMPT_INTERVAL = 1.5
-
 -- UUID паттерн 8-4-4-4-12
 local UUID_PATTERN = "^[%x][%x][%x][%x][%x][%x][%x][%x]%-[%x][%x][%x][%x]%-[%x][%x][%x][%x]%-[%x][%x][%x][%x]%-[%x][%x][%x][%x][%x][%x][%x][%x][%x][%x][%x][%x]$"
-
 local function parsePlaceAndJob(input)
     if type(input) ~= "string" then return nil, nil, "Пустой ввод" end
     local s = input:gsub("^%s+", ""):gsub("%s+$", "")
@@ -446,7 +477,6 @@ local function parsePlaceAndJob(input)
     end
     return nil, nil, "Неверный ввод (ожидается JobId или placeId, JobId)"
 end
-
 -- Общая функция одного телепорта
 local function teleportOnce(placeId, jobId)
     if not okTG or not TeleportService then
@@ -467,14 +497,12 @@ local function teleportOnce(placeId, jobId)
         return false, tostring(err)
     end
 end
-
 -- Подписка на ошибки и статусы
 local lastTeleportStatus = ""
 local function setStatus(lbl, txt)
     lastTeleportStatus = txt or ""
     if lbl then lbl.Text = txt or "" end
 end
-
 -- Реакция на TeleportInitFailed (по докам можно ретраить) 
 if okTG and TeleportService then
     TeleportService.TeleportInitFailed:Connect(function(plr, result, msg, placeId, teleOpts)
@@ -483,14 +511,12 @@ if okTG and TeleportService then
         end
     end)
 end
-
 -- Создание окна
 local function safeCreatePrompt()
     local gui = Instance.new("ScreenGui")
     gui.Name = "JobIdTeleportPrompt"
     gui.ResetOnSpawn = false
     gui.Parent = CoreGui
-
     local frame = Instance.new("Frame")
     frame.Size = UDim2.new(0, 480, 0, 182)
     frame.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -503,7 +529,6 @@ local function safeCreatePrompt()
     local stroke = Instance.new("UIStroke", frame)
     stroke.Color = UI_THEME.PanelStroke
     stroke.Thickness = 2
-
     local header = Instance.new("TextLabel")
     header.Name = "Header"
     header.BackgroundTransparency = 1
@@ -515,7 +540,6 @@ local function safeCreatePrompt()
     header.Size = UDim2.new(1, -36, 0, 28)
     header.Position = UDim2.new(0, 12, 0, 10)
     header.Parent = frame
-
     local close = Instance.new("TextButton")
     close.Text = "✕"
     close.Font = Enum.Font.GothamBlack
@@ -526,14 +550,12 @@ local function safeCreatePrompt()
     close.TextColor3 = UI_THEME.Accent
     close.Parent = frame
     close.MouseButton1Click:Connect(function() gui:Destroy() end)
-
     local inputRow = Instance.new("Frame")
     inputRow.BackgroundTransparency = 1
     inputRow.Size = UDim2.new(1, -24, 0, 36)
     inputRow.AnchorPoint = Vector2.new(0.5, 0.5)
     inputRow.Position = UDim2.new(0.5, 0, 0.5, -8)
     inputRow.Parent = frame
-
     local box = Instance.new("TextBox")
     box.Font = Enum.Font.Gotham
     box.PlaceholderText = "Примеры: 123456|job-uuid ... или просто job-uuid"
@@ -550,7 +572,6 @@ local function safeCreatePrompt()
     local boxStroke = Instance.new("UIStroke", box)
     boxStroke.Color = UI_THEME.Accent2
     boxStroke.Thickness = 1
-
     local status = Instance.new("TextLabel")
     status.BackgroundTransparency = 1
     status.Text = ""
@@ -561,7 +582,6 @@ local function safeCreatePrompt()
     status.Size = UDim2.new(1, -24, 0, 20)
     status.Position = UDim2.new(0, 12, 1, -52)
     status.Parent = frame
-
     -- Кнопка Teleport (многоразовая) — окно не закрываем
     local go = Instance.new("TextButton")
     go.Text = "Teleport"
@@ -574,7 +594,6 @@ local function safeCreatePrompt()
     go.Position = UDim2.new(1, -12, 1, -10)
     Instance.new("UICorner", go).CornerRadius = UDim.new(0, 8)
     go.Parent = frame
-
     -- Тумблер AutoTeleport
     local auto = Instance.new("TextButton")
     auto.Text = "AutoTeleport: OFF"
@@ -587,11 +606,9 @@ local function safeCreatePrompt()
     auto.Position = UDim2.new(1, -134, 1, -10)
     Instance.new("UICorner", auto).CornerRadius = UDim.new(0, 8)
     auto.Parent = frame
-
     local busy = false
     local autoOn = false
     local autoThread = nil
-
     local function parseNow()
         local placeId, jobId, err = parsePlaceAndJob(box.Text)
         if err then
@@ -600,7 +617,6 @@ local function safeCreatePrompt()
         end
         return placeId, jobId
     end
-
     local function doTeleport()
         if busy then
             setStatus(status, "Идёт попытка...")
@@ -619,10 +635,8 @@ local function safeCreatePrompt()
         end
         busy = false
     end
-
     go.MouseButton1Click:Connect(doTeleport)
     box.FocusLost:Connect(function(enter) if enter then doTeleport() end end)
-
     local function startAuto()
         if autoOn then return end
         autoOn = true
@@ -654,7 +668,6 @@ local function safeCreatePrompt()
             end
         end)
     end
-
     local function stopAuto()
         autoOn = false
         auto.Text = "AutoTeleport: OFF"
@@ -662,14 +675,11 @@ local function safeCreatePrompt()
         setStatus(status, "Автотелепорт выключен")
         autoThread = nil
     end
-
     auto.MouseButton1Click:Connect(function()
         if autoOn then stopAuto() else startAuto() end
     end)
-
     return gui
 end
-
 -- Тоггл окна на T
 UserInputService.InputBegan:Connect(function(input, gp)
     if gp then return end
