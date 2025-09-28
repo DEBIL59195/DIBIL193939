@@ -61,7 +61,8 @@ local TG_MAIN = {
         ["Celularcini Visiosini"] = true,
         ["Chicleteira Bicicleteira"] = true,
         ["Los Primos"] = true,
-        ["Tang Tang Keletang"] = true
+        ["Tang Tang Keletang"] = true,
+        ["Money Money Puggy"] = true
     }
 }
 
@@ -125,7 +126,8 @@ local OBJECT_INCOME = {
     ["Tictac Sahur"] = "37M/s",
     ["Celularcini Visiosini"] = "22.5M/s",
     ["Los Primos"] = "31M/s",
-    ["Tang Tang Keletang"] = "33.5M/s"
+    ["Tang Tang Keletang"] = "33.5M/s",
+    ["Money Money Puggy"] = "21M/s"
 }
 
 -- Множители мутаций и трейтов
@@ -136,7 +138,8 @@ local MUTATION_MULTIPLIERS = {
     ["Bloodrot"] = 2,
     ["Candy"] = 4,
     ["Lava"] = 6,
-    ["Galaxy"] = 6
+    ["Galaxy"] = 7,
+    ["Yin Yang"] = 7
 }
 
 local TRAIT_MULTIPLIERS = {
@@ -205,7 +208,8 @@ local OBJECT_EMOJIS = {
     ["Tictac Sahur"] = "🕰️",
     ["Celularcini Visiosini"] = "📞",
     ["Los Primos"] = "🙆‍♂️",
-    ["Tang Tang Keletang"] = "📢"
+    ["Tang Tang Keletang"] = "📢",
+    ["Money Money Puggy"] = "🐶"
 }
 
 -- Эмодзи для мутаций
@@ -258,7 +262,8 @@ local OBJECT_NAMES = {
     "Tictac Sahur",
     "Celularcini Visiosini",
     "Los Primos",
-    "Tang Tang Keletang"
+    "Tang Tang Keletang",
+    "Money Money Puggy"
 }
 
 -- Системные переменные
