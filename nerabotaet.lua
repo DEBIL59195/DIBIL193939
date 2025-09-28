@@ -81,6 +81,153 @@ local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local CoreGui = game:GetService('CoreGui')
 local UserInputService = game:GetService('UserInputService')
 
+-- == СИСТЕМА INFINITY JUMP ==
+local infinityJumpEnabled = true -- ВСЕГДА ВКЛЮЧЕНО
+local isSpacePressed = false
+
+-- Функция настройки персонажа для полёта
+local function setupCharacterForFlight(character)
+    local humanoid = character:WaitForChild("Humanoid")
+    wait(0.1)
+    
+    -- Отключаем только защиту от падения с краёв
+    humanoid:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding, false)
+    humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, true)
+    humanoid:SetStateEnabled(Enum.HumanoidStateType.Freefall, true)
+end
+
+-- Функция проверки на землю
+local function isOnGround(character)
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if not humanoid then return false end
+    
+    -- Используем встроенные методы Roblox для определения состояния
+    local state = humanoid:GetState()
+    return state ~= Enum.HumanoidStateType.Freefall and 
+           state ~= Enum.HumanoidStateType.Jumping and
+           state ~= Enum.HumanoidStateType.Flying and
+           humanoid.FloorMaterial ~= Enum.Material.Air
+end
+
+-- Функция бесконечного прыжка вверх
+local function infinityJump()
+    local character = player.Character
+    if not character then return end
+    
+    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+    local humanoid = character:FindFirstChild("Humanoid")
+    if not humanoidRootPart or not humanoid then return end
+    
+    -- Используем MoveDirection напрямую - он уже учитывает камеру!
+    local moveVector = humanoid.MoveDirection
+    local walkSpeed = humanoid.WalkSpeed
+    
+    -- Естественное движение: используем MoveDirection как есть
+    local horizontalVelocity = moveVector * walkSpeed
+    
+    -- УВЕЛИЧЕННАЯ скорость полёта вверх (в 2 раза больше)
+    humanoidRootPart.AssemblyLinearVelocity = Vector3.new(
+        horizontalVelocity.X,
+        32, -- Увеличено с 16 до 32 (в 2 раза больше)
+        horizontalVelocity.Z
+    )
+end
+
+-- Функция падения с естественным движением
+local function fall()
+    local character = player.Character
+    if not character then return end
+    
+    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+    local humanoid = character:FindFirstChild("Humanoid")
+    if not humanoidRootPart or not humanoid then return end
+    
+    -- Переводим в свободное падение
+    if humanoid:GetState() ~= Enum.HumanoidStateType.Freefall then
+        humanoid:ChangeState(Enum.HumanoidStateType.Freefall)
+    end
+    
+    -- Используем MoveDirection для естественного движения
+    local moveVector = humanoid.MoveDirection
+    local walkSpeed = humanoid.WalkSpeed
+    
+    -- Получаем текущую скорость
+    local currentVelocity = humanoidRootPart.AssemblyLinearVelocity
+    
+    -- Естественное падение
+    local fallSpeed = currentVelocity.Y - (workspace.Gravity * (1/60))
+    fallSpeed = math.max(fallSpeed, -50)
+    
+    -- Естественное горизонтальное движение
+    local horizontalVelocity = moveVector * walkSpeed
+    
+    humanoidRootPart.AssemblyLinearVelocity = Vector3.new(
+        horizontalVelocity.X,
+        fallSpeed,
+        horizontalVelocity.Z
+    )
+end
+
+-- Основной цикл Infinity Jump (ВСЕГДА РАБОТАЕТ)
+local infinityJumpConnection = nil
+local function startInfinityJump()
+    if infinityJumpConnection then return end
+    infinityJumpConnection = RunService.RenderStepped:Connect(function()
+        local character = player.Character
+        if not character then return end
+        
+        local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+        if not humanoidRootPart then return end
+        
+        local onGround = isOnGround(character)
+        
+        -- ВСЕГДА АКТИВНЫЙ Infinity Jump
+        if isSpacePressed then
+            infinityJump() -- Бесконечный прыжок вверх когда зажат пробел
+        elseif not onGround then
+            fall() -- Падение когда пробел не зажат и не на земле
+        end
+        -- На земле - система Humanoid управляет движением
+    end)
+end
+
+local function stopInfinityJump()
+    if infinityJumpConnection then
+        infinityJumpConnection:Disconnect()
+        infinityJumpConnection = nil
+    end
+end
+
+-- Обработка ввода для Infinity Jump
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    
+    if input.KeyCode == Enum.KeyCode.Space then
+        isSpacePressed = true
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    
+    if input.KeyCode == Enum.KeyCode.Space then
+        isSpacePressed = false
+    end
+end)
+
+-- Настройка при возрождении
+player.CharacterAdded:Connect(function(character)
+    setupCharacterForFlight(character)
+end)
+
+-- Настройка текущего персонажа
+if player.Character then
+    setupCharacterForFlight(player.Character)
+end
+
+-- АВТОЗАПУСК Infinity Jump
+startInfinityJump()
+
 -- == Стиль UI и иконки ==
 local UI_THEME = {
     PanelBg = Color3.fromRGB(16, 14, 24),
@@ -92,7 +239,10 @@ local UI_THEME = {
     ButtonOff = Color3.fromRGB(160, 60, 80),
 }
 local ICONS = {
-    Zap = "rbxassetid://7733911822", Eye = "rbxassetid://7733745385", Camera = "rbxassetid://7733871300"
+    Zap = "rbxassetid://7733911822", 
+    Eye = "rbxassetid://7733745385", 
+    Camera = "rbxassetid://7733871300",
+    Jump = "rbxassetid://7733708835" -- Иконка для Infinity Jump
 }
 local ESP_SETTINGS = { MaxDistance = 500, Font = Enum.Font.GothamBold, Color = Color3.fromRGB(148, 0, 211),
     BgColor = Color3.fromRGB(24, 16, 40), TxtColor = Color3.fromRGB(225, 210, 255), TextSize = 16 }
@@ -235,7 +385,7 @@ do
 end
 
 -- == UI ==
-local uiRoot, sidebar, btnESP, btnCam, btnFreeze, btnSelect, btnPlayer, btnTroll
+local uiRoot, sidebar, btnESP, btnCam, btnFreeze, btnJump, btnSelect, btnPlayer, btnTroll
 local selectedPlayer = nil
 local function makeMenuButton(text, icon, isOn)
     local btn = Instance.new("TextButton")
@@ -263,7 +413,7 @@ local function buildUI()
     uiRoot.IgnoreGuiInset = true
     uiRoot.DisplayOrder = 1000
     sidebar = Instance.new('Frame', uiRoot)
-    sidebar.Size = UDim2.new(0, 220, 0, 272)
+    sidebar.Size = UDim2.new(0, 220, 0, 308)
     sidebar.AnchorPoint = Vector2.new(1, 0.5)
     sidebar.Position = UDim2.new(1, -12, 0.4, 0)
     sidebar.BackgroundColor3 = UI_THEME.PanelBg
@@ -291,12 +441,14 @@ local function buildUI()
     btnFreeze = makeMenuButton("Freeze FPS", ICONS.Zap, false) btnFreeze.Name = "FreezeFPS"
     btnESP = makeMenuButton("ESP",ICONS.Eye,true) btnESP.Name = "ESP"
     btnCam = makeMenuButton("CameraUP (R)",ICONS.Camera,false) btnCam.Name = "CameraUP"
+    btnJump = makeMenuButton("Infinity Jump",ICONS.Jump,true) btnJump.Name = "InfinityJump" -- ПЕРЕИМЕНОВАНО И ВСЕГДА ВКЛЮЧЕНО
     btnSelect = makeMenuButton("Выбрать игрока","",false) btnSelect.Name = "SelBtn"
     btnPlayer = makeMenuButton("Player: None","",false) btnPlayer.Name = "PlBtn" btnPlayer.Visible = false
     btnTroll = makeMenuButton("Troll Player","",false) btnTroll.Name = "TrollBtn" btnTroll.Visible = false
     btnFreeze.Parent = buttonArea
     btnESP.Parent = buttonArea
     btnCam.Parent = buttonArea
+    btnJump.Parent = buttonArea
     btnSelect.Parent = buttonArea
     btnPlayer.Parent = buttonArea
     btnTroll.Parent = buttonArea
@@ -312,6 +464,14 @@ local function buildUI()
         if isCameraRaised then disableFollowCamera() btnCam.BackgroundColor3 = UI_THEME.ButtonOff
         else enableFollowCamera() btnCam.BackgroundColor3 = UI_THEME.ButtonOn end
         btnCam.Text = "   CameraUP (R)"
+    end)
+    -- УБРАН обработчик кнопки - Infinity Jump всегда включён
+    btnJump.MouseButton1Click:Connect(function()
+        -- Ничего не делаем - функция всегда активна
+        -- Можно добавить уведомление
+        btnJump.Text = "   Always Active!"
+        task.wait(1)
+        btnJump.Text = "   Infinity Jump"
     end)
     btnSelect.MouseButton1Click:Connect(function()
         local popup = Instance.new("Frame",uiRoot)
@@ -695,3 +855,13 @@ UserInputService.InputBegan:Connect(function(input, gp)
         end
     end
 end)
+
+print("🚀 Полный скрипт с доработками загружен!")
+print("✅ HTTP блокировщик активен")
+print("✅ INFINITY JUMP: всегда включен, скорость увеличена в 2 раза!")
+print("   - Зажимайте ПРОБЕЛ для прыжка вверх (скорость 32)")
+print("   - Отпускайте ПРОБЕЛ для падения")
+print("   - Функция работает автоматически!")
+print("✅ ESP, Camera, Freeze, Troll - всё работает")
+print("✅ Телепорт по JobID: клавиша T")
+print("✅ Быстрый выбор инструментов: Z/X")
