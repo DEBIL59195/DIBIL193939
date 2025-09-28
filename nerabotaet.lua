@@ -931,3 +931,86 @@ print("   - ВСЕ АНИМАЦИИ ПОЛНОСТЬЮ ОТКЛЮЧЕНЫ!")
 print("✅ ESP, Camera, Freeze, Troll - всё работает")
 print("✅ Телепорт по JobID: клавиша T")
 print("✅ Быстрый выбор инструментов: Z/X")
+
+-- == ДОБАВЛЕННЫЙ ВТОРОЙ СКРИПТ ==
+-- Красивый фиолетовый скрипт для RemainingTime без черного фона
+local RunService = game:GetService("RunService")
+local highlightedObjects = {}
+
+local function createBeautifulPurpleRemainingTime()
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj.Name == "RemainingTime" and obj.Parent and obj.Parent:IsA("BillboardGui") then
+            local billboardGui = obj.Parent
+            local remainingTimeLabel = obj
+            
+            if not highlightedObjects[billboardGui] then
+                -- Настройки BillboardGui для неограниченной видимости
+                billboardGui.MaxDistance = math.huge
+                billboardGui.AlwaysOnTop = true
+                billboardGui.Size = UDim2.new(12, 0, 6, 0)
+                billboardGui.StudsOffset = Vector3.new(0, 3, 0)
+                billboardGui.LightInfluence = 0  -- Не зависит от освещения
+                
+                if remainingTimeLabel:IsA("TextLabel") then
+                    -- Красивое оформление текста
+                    remainingTimeLabel.Size = UDim2.new(1, 0, 1, 0)
+                    remainingTimeLabel.BackgroundTransparency = 1  -- ПОЛНОСТЬЮ ПРОЗРАЧНЫЙ ФОН
+                    remainingTimeLabel.TextScaled = true
+                    remainingTimeLabel.RichText = true
+                    remainingTimeLabel.Font = Enum.Font.GothamBold
+                    
+                    -- ФИОЛЕТОВЫЕ ЦВЕТА
+                    remainingTimeLabel.TextColor3 = Color3.new(0.8, 0.4, 1)      -- Ярко-фиолетовый текст
+                    remainingTimeLabel.TextStrokeTransparency = 0                -- Включаем обводку
+                    remainingTimeLabel.TextStrokeColor3 = Color3.new(0.3, 0, 0.6) -- Темно-фиолетовая обводка
+                    
+                    -- Размеры текста
+                    local constraint = remainingTimeLabel:FindFirstChild("UITextSizeConstraint")
+                    if constraint then
+                        constraint:Destroy()
+                    end
+                    
+                    local newConstraint = Instance.new("UITextSizeConstraint")
+                    newConstraint.MaxTextSize = 600
+                    newConstraint.MinTextSize = 250
+                    newConstraint.Parent = remainingTimeLabel
+                    
+                    -- Добавляем красивый градиент
+                    local gradient = Instance.new("UIGradient")
+                    gradient.Color = ColorSequence.new{
+                        ColorSequenceKeypoint.new(0, Color3.new(1, 0.5, 1)),      -- Светло-фиолетовый сверху
+                        ColorSequenceKeypoint.new(0.5, Color3.new(0.8, 0.3, 1)),  -- Средне-фиолетовый в середине
+                        ColorSequenceKeypoint.new(1, Color3.new(0.5, 0, 0.8))     -- Темно-фиолетовый снизу
+                    }
+                    gradient.Rotation = 90  -- Вертикальный градиент
+                    gradient.Parent = remainingTimeLabel
+                end
+                
+                -- ФИОЛЕТОВАЯ ПОДСВЕТКА
+                local highlight = Instance.new("Highlight")
+                highlight.Name = "RemainingTimeHighlight"
+                highlight.FillColor = Color3.new(0.7, 0.2, 1)        -- Фиолетовая заливка
+                highlight.FillTransparency = 0.4                      -- Полупрозрачная
+                highlight.OutlineColor = Color3.new(1, 0.8, 1)       -- Светло-фиолетовая обводка
+                highlight.OutlineTransparency = 0                     -- Непрозрачная обводка
+                highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                highlight.Adornee = billboardGui
+                highlight.Parent = billboardGui
+                
+                highlightedObjects[billboardGui] = true
+                print("Создан красивый фиолетовый RemainingTime:", billboardGui:GetFullName())
+            end
+        end
+    end
+end
+
+-- Запуск
+createBeautifulPurpleRemainingTime()
+
+-- Автообновление
+workspace.DescendantAdded:Connect(function(descendant)
+    if descendant.Name == "RemainingTime" then
+        wait(0.2)
+        createBeautifulPurpleRemainingTime()
+    end
+end)
