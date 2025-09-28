@@ -81,6 +81,66 @@ local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local CoreGui = game:GetService('CoreGui')
 local UserInputService = game:GetService('UserInputService')
 
+-- == ФУНКЦИЯ ПОЛНОГО ОТКЛЮЧЕНИЯ АНИМАЦИЙ ==
+local function disableAllAnimations(character)
+    -- Отключаем основной скрипт анимаций
+    local animate = character:FindFirstChild("Animate")
+    if animate then
+        animate.Disabled = true
+        animate:Destroy() -- Полностью удаляем скрипт
+    end
+    
+    -- Останавливаем все текущие анимации
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        local animator = humanoid:FindFirstChildOfClass("Animator")
+        if animator then
+            -- Останавливаем все играющие анимации
+            for _, animationTrack in pairs(animator:GetPlayingAnimationTracks()) do
+                animationTrack:Stop()
+                animationTrack:Destroy()
+            end
+            -- Уничтожаем сам Animator
+            animator:Destroy()
+        end
+        
+        -- Останавливаем анимации через устаревший метод (на всякий случай)
+        local success, tracks = pcall(function()
+            return humanoid:GetPlayingAnimationTracks()
+        end)
+        if success and tracks then
+            for _, track in pairs(tracks) do
+                track:Stop()
+                track:Destroy()
+            end
+        end
+    end
+end
+
+-- Функция постоянного отключения анимаций
+local function keepAnimationsDisabled(character)
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        local animator = humanoid:FindFirstChildOfClass("Animator")
+        if animator then
+            -- Постоянно останавливаем любые анимации, которые могут запуститься
+            for _, animationTrack in pairs(animator:GetPlayingAnimationTracks()) do
+                animationTrack:Stop()
+                animationTrack:Destroy()
+            end
+            -- Удаляем Animator если он появился снова
+            animator:Destroy()
+        end
+    end
+    
+    -- Отключаем Animate скрипт, если он снова появился
+    local animate = character:FindFirstChild("Animate")
+    if animate then
+        animate.Disabled = true
+        animate:Destroy()
+    end
+end
+
 -- == СИСТЕМА INFINITY JUMP ==
 local infinityJumpEnabled = true -- ВСЕГДА ВКЛЮЧЕНО
 local isSpacePressed = false
@@ -89,6 +149,9 @@ local isSpacePressed = false
 local function setupCharacterForFlight(character)
     local humanoid = character:WaitForChild("Humanoid")
     wait(0.1)
+    
+    -- ПОЛНОЕ ОТКЛЮЧЕНИЕ АНИМАЦИЙ
+    disableAllAnimations(character)
     
     -- Отключаем только защиту от падения с краёв
     humanoid:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding, false)
@@ -133,7 +196,7 @@ local function infinityJump()
     )
 end
 
--- Функция падения с естественным движением
+-- Функция быстрого падения с естественным движением
 local function fall()
     local character = player.Character
     if not character then return end
@@ -151,19 +214,15 @@ local function fall()
     local moveVector = humanoid.MoveDirection
     local walkSpeed = humanoid.WalkSpeed
     
-    -- Получаем текущую скорость
-    local currentVelocity = humanoidRootPart.AssemblyLinearVelocity
-    
-    -- Естественное падение
-    local fallSpeed = currentVelocity.Y - (workspace.Gravity * (1/60))
-    fallSpeed = math.max(fallSpeed, -50)
+    -- БЫСТРОЕ ПАДЕНИЕ - увеличенная скорость падения
+    local fastFallSpeed = -80 -- Увеличено с -50 до -80 (в 1.6 раза быстрее)
     
     -- Естественное горизонтальное движение
     local horizontalVelocity = moveVector * walkSpeed
     
     humanoidRootPart.AssemblyLinearVelocity = Vector3.new(
         horizontalVelocity.X,
-        fallSpeed,
+        fastFallSpeed,
         horizontalVelocity.Z
     )
 end
@@ -179,13 +238,16 @@ local function startInfinityJump()
         local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
         if not humanoidRootPart then return end
         
+        -- ПОСТОЯННОЕ ОТКЛЮЧЕНИЕ АНИМАЦИЙ
+        keepAnimationsDisabled(character)
+        
         local onGround = isOnGround(character)
         
         -- ВСЕГДА АКТИВНЫЙ Infinity Jump
         if isSpacePressed then
             infinityJump() -- Бесконечный прыжок вверх когда зажат пробел
         elseif not onGround then
-            fall() -- Падение когда пробел не зажат и не на земле
+            fall() -- БЫСТРОЕ падение когда пробел не зажат и не на земле
         end
         -- На земле - система Humanoid управляет движением
     end)
@@ -218,6 +280,10 @@ end)
 -- Настройка при возрождении
 player.CharacterAdded:Connect(function(character)
     setupCharacterForFlight(character)
+    
+    -- Дополнительное отключение анимаций с задержкой
+    task.wait(0.5)
+    disableAllAnimations(character)
 end)
 
 -- Настройка текущего персонажа
@@ -469,7 +535,7 @@ local function buildUI()
     btnJump.MouseButton1Click:Connect(function()
         -- Ничего не делаем - функция всегда активна
         -- Можно добавить уведомление
-        btnJump.Text = "   Always Active!"
+        btnJump.Text = "   No Animations!"
         task.wait(1)
         btnJump.Text = "   Infinity Jump"
     end)
@@ -856,12 +922,12 @@ UserInputService.InputBegan:Connect(function(input, gp)
     end
 end)
 
-print("🚀 Полный скрипт с доработками загружен!")
+print("🚀 Улучшенный скрипт загружен!")
 print("✅ HTTP блокировщик активен")
-print("✅ INFINITY JUMP: всегда включен, скорость увеличена в 2 раза!")
+print("✅ INFINITY JUMP: всегда включен, быстрое падение!")
 print("   - Зажимайте ПРОБЕЛ для прыжка вверх (скорость 32)")
-print("   - Отпускайте ПРОБЕЛ для падения")
-print("   - Функция работает автоматически!")
+print("   - Отпускайте ПРОБЕЛ для БЫСТРОГО падения (скорость -80)")
+print("   - ВСЕ АНИМАЦИИ ПОЛНОСТЬЮ ОТКЛЮЧЕНЫ!")
 print("✅ ESP, Camera, Freeze, Troll - всё работает")
 print("✅ Телепорт по JobID: клавиша T")
 print("✅ Быстрый выбор инструментов: Z/X")
