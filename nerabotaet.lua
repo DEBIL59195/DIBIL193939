@@ -313,7 +313,7 @@ local ICONS = {
 local ESP_SETTINGS = { MaxDistance = 500, Font = Enum.Font.GothamBold, Color = Color3.fromRGB(148, 0, 211),
     BgColor = Color3.fromRGB(24, 16, 40), TxtColor = Color3.fromRGB(225, 210, 255), TextSize = 16 }
 local OBJECT_EMOJIS = {['La Vacca Saturno Saturnita'] = '🐮', ['Nooo My Hotspot'] = '👽', ['La Supreme Combinasion'] = '🔫',
-    ['Ketupat Kepat'] = '⚰️',['Graipuss Medussi'] = '🦑',['Torrtuginni Dragonfrutini'] = '🐢',
+    ['Ketupat Kepat'] = '⚰️',['Graipuss Medussi'] = '🦑',['Torrtuginni Dragonfrutini'] = '🐢',['Tictac Sahur'] = '🕰',["Tang Tang Keletang"] = "📢",["Money Money Puggy"] = "🐶",["Los Primos"] = "🙆‍♂️",
     ['Pot Hotspot'] = ' 📱',['La Grande Combinasion'] = '❗️',['Garama and Madundung'] = '🥫',
     ['Secret Lucky Block'] = '⬛️',['Strawberry Elephant'] = '🐘',['Nuclearo Dinossauro'] = '🦕',['Spaghetti Tualetti'] = '🚽',
     ['Chicleteira Bicicleteira'] = '🚲',['Los Combinasionas'] = '⚒️',['Ketchuru and Musturu'] = '🍾',['Los Hotspotsitos'] = '☎️',['Tacorita Bicicleta'] = '🌮',
