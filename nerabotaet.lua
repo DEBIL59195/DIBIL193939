@@ -13,28 +13,23 @@ local UserInputService = game:GetService('UserInputService')
 
 -- == ФУНКЦИЯ ПОЛНОГО ОТКЛЮЧЕНИЯ АНИМАЦИЙ ==
 local function disableAllAnimations(character)
-    -- Отключаем основной скрипт анимаций
     local animate = character:FindFirstChild("Animate")
     if animate then
         animate.Disabled = true
-        animate:Destroy() -- Полностью удаляем скрипт
+        animate:Destroy()
     end
     
-    -- Останавливаем все текущие анимации
     local humanoid = character:FindFirstChildOfClass("Humanoid")
     if humanoid then
         local animator = humanoid:FindFirstChildOfClass("Animator")
         if animator then
-            -- Останавливаем все играющие анимации
             for _, animationTrack in pairs(animator:GetPlayingAnimationTracks()) do
                 animationTrack:Stop()
                 animationTrack:Destroy()
             end
-            -- Уничтожаем сам Animator
             animator:Destroy()
         end
         
-        -- Останавливаем анимации через устаревший метод (на всякий случай)
         local success, tracks = pcall(function()
             return humanoid:GetPlayingAnimationTracks()
         end)
@@ -47,23 +42,19 @@ local function disableAllAnimations(character)
     end
 end
 
--- Функция постоянного отключения анимаций
 local function keepAnimationsDisabled(character)
     local humanoid = character:FindFirstChildOfClass("Humanoid")
     if humanoid then
         local animator = humanoid:FindFirstChildOfClass("Animator")
         if animator then
-            -- Постоянно останавливаем любые анимации, которые могут запуститься
             for _, animationTrack in pairs(animator:GetPlayingAnimationTracks()) do
                 animationTrack:Stop()
                 animationTrack:Destroy()
             end
-            -- Удаляем Animator если он появился снова
             animator:Destroy()
         end
     end
     
-    -- Отключаем Animate скрипт, если он снова появился
     local animate = character:FindFirstChild("Animate")
     if animate then
         animate.Disabled = true
@@ -72,29 +63,24 @@ local function keepAnimationsDisabled(character)
 end
 
 -- == СИСТЕМА INFINITY JUMP ==
-local infinityJumpEnabled = true -- ВСЕГДА ВКЛЮЧЕНО
+local infinityJumpEnabled = true
 local isSpacePressed = false
 
--- Функция настройки персонажа для полёта
 local function setupCharacterForFlight(character)
     local humanoid = character:WaitForChild("Humanoid")
     wait(0.1)
     
-    -- ПОЛНОЕ ОТКЛЮЧЕНИЕ АНИМАЦИЙ
     disableAllAnimations(character)
     
-    -- Отключаем только защиту от падения с краёв
     humanoid:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding, false)
     humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, true)
     humanoid:SetStateEnabled(Enum.HumanoidStateType.Freefall, true)
 end
 
--- Функция проверки на землю
 local function isOnGround(character)
     local humanoid = character:FindFirstChildOfClass("Humanoid")
     if not humanoid then return false end
     
-    -- Используем встроенные методы Roblox для определения состояния
     local state = humanoid:GetState()
     return state ~= Enum.HumanoidStateType.Freefall and 
            state ~= Enum.HumanoidStateType.Jumping and
@@ -102,7 +88,6 @@ local function isOnGround(character)
            humanoid.FloorMaterial ~= Enum.Material.Air
 end
 
--- Функция бесконечного прыжка вверх
 local function infinityJump()
     local character = player.Character
     if not character then return end
@@ -111,22 +96,18 @@ local function infinityJump()
     local humanoid = character:FindFirstChild("Humanoid")
     if not humanoidRootPart or not humanoid then return end
     
-    -- Используем MoveDirection напрямую - он уже учитывает камеру!
     local moveVector = humanoid.MoveDirection
     local walkSpeed = humanoid.WalkSpeed
     
-    -- Естественное движение: используем MoveDirection как есть
     local horizontalVelocity = moveVector * walkSpeed
     
-    -- УВЕЛИЧЕННАЯ скорость полёта вверх (в 2 раза больше)
     humanoidRootPart.AssemblyLinearVelocity = Vector3.new(
         horizontalVelocity.X,
-        32, -- Увеличено с 16 до 32 (в 2 раза больше)
+        32,
         horizontalVelocity.Z
     )
 end
 
--- Функция быстрого падения с естественным движением
 local function fall()
     local character = player.Character
     if not character then return end
@@ -135,19 +116,15 @@ local function fall()
     local humanoid = character:FindFirstChild("Humanoid")
     if not humanoidRootPart or not humanoid then return end
     
-    -- Переводим в свободное падение
     if humanoid:GetState() ~= Enum.HumanoidStateType.Freefall then
         humanoid:ChangeState(Enum.HumanoidStateType.Freefall)
     end
     
-    -- Используем MoveDirection для естественного движения
     local moveVector = humanoid.MoveDirection
     local walkSpeed = humanoid.WalkSpeed
     
-    -- БЫСТРОЕ ПАДЕНИЕ - увеличенная скорость падения
-    local fastFallSpeed = -80 -- Увеличено с -50 до -80 (в 1.6 раза быстрее)
+    local fastFallSpeed = -80
     
-    -- Естественное горизонтальное движение
     local horizontalVelocity = moveVector * walkSpeed
     
     humanoidRootPart.AssemblyLinearVelocity = Vector3.new(
@@ -157,7 +134,6 @@ local function fall()
     )
 end
 
--- Основной цикл Infinity Jump (ВСЕГДА РАБОТАЕТ)
 local infinityJumpConnection = nil
 local function startInfinityJump()
     if infinityJumpConnection then return end
@@ -168,18 +144,15 @@ local function startInfinityJump()
         local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
         if not humanoidRootPart then return end
         
-        -- ПОСТОЯННОЕ ОТКЛЮЧЕНИЕ АНИМАЦИЙ
         keepAnimationsDisabled(character)
         
         local onGround = isOnGround(character)
         
-        -- ВСЕГДА АКТИВНЫЙ Infinity Jump
         if isSpacePressed then
-            infinityJump() -- Бесконечный прыжок вверх когда зажат пробел
+            infinityJump()
         elseif not onGround then
-            fall() -- БЫСТРОЕ падение когда пробел не зажат и не на земле
+            fall()
         end
-        -- На земле - система Humanoid управляет движением
     end)
 end
 
@@ -190,7 +163,6 @@ local function stopInfinityJump()
     end
 end
 
--- Обработка ввода для Infinity Jump
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
     
@@ -207,21 +179,17 @@ UserInputService.InputEnded:Connect(function(input, gameProcessed)
     end
 end)
 
--- Настройка при возрождении
 player.CharacterAdded:Connect(function(character)
     setupCharacterForFlight(character)
     
-    -- Дополнительное отключение анимаций с задержкой
     task.wait(0.5)
     disableAllAnimations(character)
 end)
 
--- Настройка текущего персонажа
 if player.Character then
     setupCharacterForFlight(player.Character)
 end
 
--- АВТОЗАПУСК Infinity Jump
 startInfinityJump()
 
 -- == Стиль UI и иконки ==
@@ -238,11 +206,11 @@ local ICONS = {
     Zap = "rbxassetid://7733911822", 
     Eye = "rbxassetid://7733745385", 
     Camera = "rbxassetid://7733871300",
-    Jump = "rbxassetid://7733708835" -- Иконка для Infinity Jump
+    Jump = "rbxassetid://7733708835"
 }
 local ESP_SETTINGS = { MaxDistance = 500, Font = Enum.Font.GothamBold, Color = Color3.fromRGB(148, 0, 211),
     BgColor = Color3.fromRGB(24, 16, 40), TxtColor = Color3.fromRGB(225, 210, 255), TextSize = 16 }
-local OBJECT_EMOJIS = {['La Vacca Saturno Saturnita'] = '🐮', ['Nooo My Hotspot'] = '👽', ['La Supreme Combinasion'] = '🔫',
+local OBJECT_EMOJIS = {['La Vacca Saturno Saturita'] = '🐮', ['Nooo My Hotspot'] = '👽', ['La Supreme Combinasion'] = '🔫',
     ['Ketupat Kepat'] = '⚰️',['Graipuss Medussi'] = '🦑',['Torrtuginni Dragonfrutini'] = '🐢',['Tictac Sahur'] = '🕰',["Tang Tang Keletang"] = "📢",["Money Money Puggy"] = "🐶",["Los Primos"] = "🙆‍♂️",
     ['Pot Hotspot'] = ' 📱',['La Grande Combinasion'] = '❗️',['Garama and Madundung'] = '🥫',
     ['Secret Lucky Block'] = '⬛️',['Strawberry Elephant'] = '🐘',['Nuclearo Dinossauro'] = '🦕',['Spaghetti Tualetti'] = '🚽',
@@ -380,6 +348,44 @@ do
     player.CharacterAdded:Connect(function() FPSDevourer.running=false FPSDevourer._stop=true end)
 end
 
+-- == ФУНКЦИЯ ПЕРЕТАСКИВАНИЯ GUI ==
+local function makeDraggable(frame)
+    local dragging = false
+    local dragInput, mousePos, framePos
+    
+    frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            mousePos = input.Position
+            framePos = frame.Position
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+    
+    frame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+    
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - mousePos
+            frame.Position = UDim2.new(
+                framePos.X.Scale,
+                framePos.X.Offset + delta.X,
+                framePos.Y.Scale,
+                framePos.Y.Offset + delta.Y
+            )
+        end
+    end)
+end
+
 -- == UI ==
 local uiRoot, sidebar, btnESP, btnCam, btnFreeze, btnJump, btnSelect, btnPlayer, btnTroll
 local selectedPlayer = nil
@@ -414,6 +420,10 @@ local function buildUI()
     sidebar.Position = UDim2.new(1, -12, 0.4, 0)
     sidebar.BackgroundColor3 = UI_THEME.PanelBg
     sidebar.Active = true
+    
+    -- ДЕЛАЕМ GUI ПЕРЕТАСКИВАЕМЫМ
+    makeDraggable(sidebar)
+    
     Instance.new('UICorner', sidebar).CornerRadius = UDim.new(0,12)
     local stroke = Instance.new('UIStroke',sidebar)
     stroke.Color = UI_THEME.PanelStroke
@@ -437,7 +447,7 @@ local function buildUI()
     btnFreeze = makeMenuButton("Freeze FPS", ICONS.Zap, false) btnFreeze.Name = "FreezeFPS"
     btnESP = makeMenuButton("ESP",ICONS.Eye,true) btnESP.Name = "ESP"
     btnCam = makeMenuButton("CameraUP (R)",ICONS.Camera,false) btnCam.Name = "CameraUP"
-    btnJump = makeMenuButton("Infinity Jump",ICONS.Jump,true) btnJump.Name = "InfinityJump" -- ПЕРЕИМЕНОВАНО И ВСЕГДА ВКЛЮЧЕНО
+    btnJump = makeMenuButton("Infinity Jump",ICONS.Jump,true) btnJump.Name = "InfinityJump"
     btnSelect = makeMenuButton("Выбрать игрока","",false) btnSelect.Name = "SelBtn"
     btnPlayer = makeMenuButton("Player: None","",false) btnPlayer.Name = "PlBtn" btnPlayer.Visible = false
     btnTroll = makeMenuButton("Troll Player","",false) btnTroll.Name = "TrollBtn" btnTroll.Visible = false
@@ -461,10 +471,7 @@ local function buildUI()
         else enableFollowCamera() btnCam.BackgroundColor3 = UI_THEME.ButtonOn end
         btnCam.Text = "   CameraUP (R)"
     end)
-    -- УБРАН обработчик кнопки - Infinity Jump всегда включён
     btnJump.MouseButton1Click:Connect(function()
-        -- Ничего не делаем - функция всегда активна
-        -- Можно добавить уведомление
         btnJump.Text = "   No Animations!"
         task.wait(1)
         btnJump.Text = "   Infinity Jump"
@@ -475,6 +482,10 @@ local function buildUI()
         popup.Size = UDim2.new(0, 220, 0, 190)
         popup.Position = UDim2.new(0, 250, 0.5, -95)
         popup.AnchorPoint = Vector2.new(0,0)
+        
+        -- ДЕЛАЕМ ПОПАП ПЕРЕТАСКИВАЕМЫМ
+        makeDraggable(popup)
+        
         Instance.new("UICorner", popup).CornerRadius = UDim.new(0,9)
         local border = Instance.new("UIStroke", popup)
         border.Color = UI_THEME.PanelStroke
@@ -604,14 +615,11 @@ UserInputService.InputBegan:Connect(function(input, gp)
     end
 end)
 
--- == INPUT TELEPORT BY JOBID (Key T) - Centered & No AutoFocus + AutoTeleport ==
+-- == INPUT TELEPORT BY JOBID (Key T) ==
 local okTG, TeleportService = pcall(function() return game:GetService("TeleportService") end)
 local LocalPlayer = player
--- Переключатель между старыми и новыми API телепорта
-local USE_TELEPORT_ASYNC = false -- true для TeleportAsync + TeleportOptions.ServerInstanceId [docs recommend TeleportAsync]
--- Интервал авто-попыток
+local USE_TELEPORT_ASYNC = false
 local ATTEMPT_INTERVAL = 1.5
--- UUID паттерн 8-4-4-4-12
 local UUID_PATTERN = "^[%x][%x][%x][%x][%x][%x][%x][%x]%-[%x][%x][%x][%x]%-[%x][%x][%x][%x]%-[%x][%x][%x][%x]%-[%x][%x][%x][%x][%x][%x][%x][%x][%x][%x][%x][%x]$"
 local function parsePlaceAndJob(input)
     if type(input) ~= "string" then return nil, nil, "Пустой ввод" end
@@ -626,14 +634,12 @@ local function parsePlaceAndJob(input)
     if s:match(UUID_PATTERN) then
         return tonumber(game.PlaceId), s, nil
     end
-    -- Вариант "placeId | jobId"
     local p2, j2 = s:match("^(%d+)%s*[|,;%s]%s*([%w%-]+)$")
     if p2 and j2 and j2:match(UUID_PATTERN) then
         return tonumber(p2), j2, nil
     end
     return nil, nil, "Неверный ввод (ожидается JobId или placeId, JobId)"
 end
--- Общая функция одного телепорта
 local function teleportOnce(placeId, jobId)
     if not okTG or not TeleportService then
         return false, "TeleportService недоступен"
@@ -641,7 +647,7 @@ local function teleportOnce(placeId, jobId)
     local ok, err = pcall(function()
         if USE_TELEPORT_ASYNC then
             local TeleportOptions = Instance.new("TeleportOptions")
-            TeleportOptions.ServerInstanceId = jobId -- InstanceId (JobId)
+            TeleportOptions.ServerInstanceId = jobId
             TeleportService:TeleportAsync(placeId, {LocalPlayer}, TeleportOptions)
         else
             TeleportService:TeleportToPlaceInstance(placeId, jobId, LocalPlayer)
@@ -653,13 +659,11 @@ local function teleportOnce(placeId, jobId)
         return false, tostring(err)
     end
 end
--- Подписка на ошибки и статусы
 local lastTeleportStatus = ""
 local function setStatus(lbl, txt)
     lastTeleportStatus = txt or ""
     if lbl then lbl.Text = txt or "" end
 end
--- Реакция на TeleportInitFailed (по докам можно ретраить) 
 if okTG and TeleportService then
     TeleportService.TeleportInitFailed:Connect(function(plr, result, msg, placeId, teleOpts)
         if plr == LocalPlayer then
@@ -667,7 +671,6 @@ if okTG and TeleportService then
         end
     end)
 end
--- Создание окна
 local function safeCreatePrompt()
     local gui = Instance.new("ScreenGui")
     gui.Name = "JobIdTeleportPrompt"
@@ -681,6 +684,10 @@ local function safeCreatePrompt()
     frame.Active = true
     frame.ClipsDescendants = true
     frame.Parent = gui
+    
+    -- ДЕЛАЕМ ОКНО ТЕЛЕПОРТА ПЕРЕТАСКИВАЕМЫМ
+    makeDraggable(frame)
+    
     Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
     local stroke = Instance.new("UIStroke", frame)
     stroke.Color = UI_THEME.PanelStroke
@@ -738,7 +745,6 @@ local function safeCreatePrompt()
     status.Size = UDim2.new(1, -24, 0, 20)
     status.Position = UDim2.new(0, 12, 1, -52)
     status.Parent = frame
-    -- Кнопка Teleport (многоразовая) — окно не закрываем
     local go = Instance.new("TextButton")
     go.Text = "Teleport"
     go.Font = Enum.Font.GothamBold
@@ -750,7 +756,6 @@ local function safeCreatePrompt()
     go.Position = UDim2.new(1, -12, 1, -10)
     Instance.new("UICorner", go).CornerRadius = UDim.new(0, 8)
     go.Parent = frame
-    -- Тумблер AutoTeleport
     local auto = Instance.new("TextButton")
     auto.Text = "AutoTeleport: OFF"
     auto.Font = Enum.Font.GothamBold
@@ -785,7 +790,6 @@ local function safeCreatePrompt()
         local ok, err = teleportOnce(placeId, jobId)
         if ok then
             setStatus(status, "Телепорт вызван, ждём загрузки...")
-            -- ВАЖНО: окно НЕ закрываем; оставляем для повторных нажатий
         else
             setStatus(status, "Не удалось: "..tostring(err))
         end
@@ -813,8 +817,6 @@ local function safeCreatePrompt()
                         end
                         busy = false
                     end
-                else
-                    -- Некорректный ввод — просто ждём
                 end
                 local t0 = tick()
                 while tick() - t0 < ATTEMPT_INTERVAL do
@@ -836,7 +838,6 @@ local function safeCreatePrompt()
     end)
     return gui
 end
--- Тоггл окна на T
 UserInputService.InputBegan:Connect(function(input, gp)
     if gp then return end
     if input.KeyCode == Enum.KeyCode.T then
@@ -861,9 +862,9 @@ print("   - ВСЕ АНИМАЦИИ ПОЛНОСТЬЮ ОТКЛЮЧЕНЫ!")
 print("✅ ESP, Camera, Freeze, Troll - всё работает")
 print("✅ Телепорт по JobID: клавиша T")
 print("✅ Быстрый выбор инструментов: Z/X")
+print("✅ GUI теперь можно перетаскивать!")
 
 -- == ДОБАВЛЕННЫЙ ВТОРОЙ СКРИПТ ==
--- Красивый фиолетовый скрипт для RemainingTime без черного фона
 local RunService = game:GetService("RunService")
 local highlightedObjects = {}
 
@@ -874,27 +875,23 @@ local function createBeautifulPurpleRemainingTime()
             local remainingTimeLabel = obj
             
             if not highlightedObjects[billboardGui] then
-                -- Настройки BillboardGui для неограниченной видимости
                 billboardGui.MaxDistance = math.huge
                 billboardGui.AlwaysOnTop = true
                 billboardGui.Size = UDim2.new(12, 0, 6, 0)
                 billboardGui.StudsOffset = Vector3.new(0, 3, 0)
-                billboardGui.LightInfluence = 0  -- Не зависит от освещения
+                billboardGui.LightInfluence = 0
                 
                 if remainingTimeLabel:IsA("TextLabel") then
-                    -- Красивое оформление текста
                     remainingTimeLabel.Size = UDim2.new(1, 0, 1, 0)
-                    remainingTimeLabel.BackgroundTransparency = 1  -- ПОЛНОСТЬЮ ПРОЗРАЧНЫЙ ФОН
+                    remainingTimeLabel.BackgroundTransparency = 1
                     remainingTimeLabel.TextScaled = true
                     remainingTimeLabel.RichText = true
                     remainingTimeLabel.Font = Enum.Font.GothamBold
                     
-                    -- ФИОЛЕТОВЫЕ ЦВЕТА
-                    remainingTimeLabel.TextColor3 = Color3.new(0.8, 0.4, 1)      -- Ярко-фиолетовый текст
-                    remainingTimeLabel.TextStrokeTransparency = 0                -- Включаем обводку
-                    remainingTimeLabel.TextStrokeColor3 = Color3.new(0.3, 0, 0.6) -- Темно-фиолетовая обводка
+                    remainingTimeLabel.TextColor3 = Color3.new(0.8, 0.4, 1)
+                    remainingTimeLabel.TextStrokeTransparency = 0
+                    remainingTimeLabel.TextStrokeColor3 = Color3.new(0.3, 0, 0.6)
                     
-                    -- Размеры текста
                     local constraint = remainingTimeLabel:FindFirstChild("UITextSizeConstraint")
                     if constraint then
                         constraint:Destroy()
@@ -905,24 +902,22 @@ local function createBeautifulPurpleRemainingTime()
                     newConstraint.MinTextSize = 250
                     newConstraint.Parent = remainingTimeLabel
                     
-                    -- Добавляем красивый градиент
                     local gradient = Instance.new("UIGradient")
                     gradient.Color = ColorSequence.new{
-                        ColorSequenceKeypoint.new(0, Color3.new(1, 0.5, 1)),      -- Светло-фиолетовый сверху
-                        ColorSequenceKeypoint.new(0.5, Color3.new(0.8, 0.3, 1)),  -- Средне-фиолетовый в середине
-                        ColorSequenceKeypoint.new(1, Color3.new(0.5, 0, 0.8))     -- Темно-фиолетовый снизу
+                        ColorSequenceKeypoint.new(0, Color3.new(1, 0.5, 1)),
+                        ColorSequenceKeypoint.new(0.5, Color3.new(0.8, 0.3, 1)),
+                        ColorSequenceKeypoint.new(1, Color3.new(0.5, 0, 0.8))
                     }
-                    gradient.Rotation = 90  -- Вертикальный градиент
+                    gradient.Rotation = 90
                     gradient.Parent = remainingTimeLabel
                 end
                 
-                -- ФИОЛЕТОВАЯ ПОДСВЕТКА
                 local highlight = Instance.new("Highlight")
                 highlight.Name = "RemainingTimeHighlight"
-                highlight.FillColor = Color3.new(0.7, 0.2, 1)        -- Фиолетовая заливка
-                highlight.FillTransparency = 0.4                      -- Полупрозрачная
-                highlight.OutlineColor = Color3.new(1, 0.8, 1)       -- Светло-фиолетовая обводка
-                highlight.OutlineTransparency = 0                     -- Непрозрачная обводка
+                highlight.FillColor = Color3.new(0.7, 0.2, 1)
+                highlight.FillTransparency = 0.4
+                highlight.OutlineColor = Color3.new(1, 0.8, 1)
+                highlight.OutlineTransparency = 0
                 highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
                 highlight.Adornee = billboardGui
                 highlight.Parent = billboardGui
@@ -934,10 +929,8 @@ local function createBeautifulPurpleRemainingTime()
     end
 end
 
--- Запуск
 createBeautifulPurpleRemainingTime()
 
--- Автообновление
 workspace.DescendantAdded:Connect(function(descendant)
     if descendant.Name == "RemainingTime" then
         wait(0.2)
