@@ -112,7 +112,7 @@ end
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
 
-    if input.KeyCode == Enum.KeyCode.V then
+    if input.KeyCode == Enum.KeyCode.G then
         if removePlayerEnabled then
             stopRemovePlayers()
         else
