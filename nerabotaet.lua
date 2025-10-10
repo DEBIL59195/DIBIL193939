@@ -14,6 +14,32 @@ pcall(function()
     end
 end)
 
+
+-- == РАСШИРЕНИЕ ПЛАТФОРМ ==
+local targetColor = Color3.fromRGB(99, 95, 98)
+local targetMaterial = Enum.Material.SmoothPlastic
+local count = 0
+
+for _, obj in pairs(workspace.Map:GetDescendants()) do
+    if obj:IsA("BasePart") then
+        -- Проверяем Material, Color и наличие MaterialVariant
+        if obj.Material == targetMaterial and obj.Color == targetColor then
+            obj.Size = Vector3.new(
+                obj.Size.X,
+                obj.Size.Y,
+                obj.Size.Z * 4
+            )
+            count = count + 1
+            print("Расширен:", obj.Name)
+            if obj.MaterialVariant ~= "" then
+                print("MaterialVariant:", obj.MaterialVariant)
+            end
+        end
+    end
+end
+
+print("Всего расширено:", count)
+
 -- == Гарантированное получение LocalPlayer ==
 
 -- == Безопасный HTTP Block с исключениями ==
@@ -1342,4 +1368,3 @@ workspace.DescendantAdded:Connect(function(descendant)
         createBeautifulPurpleRemainingTime()
     end
 end)
-loadstring(game:HttpGet("https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"))()
