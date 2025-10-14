@@ -39,7 +39,7 @@ local OBJECTS = {
     ['Strawberry Elephant'] = { emoji = '🐘', important = true },
     ['Spaghetti Tualetti'] = { emoji = '🚽', important = true },
     ['Ketchuru and Musturu'] = { emoji = '🍾', important = true },
-    ['Los Nooo Mysffsfsf Hotspotsitos'] = { emoji = '🥔', important = false },
+    ['La Secret Combinasion'] = { emoji = '❓', important = true },
     ['La Kark56656erkar Combinasion'] = { emoji = '🥊', important = false },
     ['Los Bros'] = { emoji = '📱', important = true },
     ['Tralaledon'] = { emoji = '🦈', important = true },
