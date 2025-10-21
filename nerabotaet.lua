@@ -1368,4 +1368,4 @@ workspace.DescendantAdded:Connect(function(descendant)
         createBeautifulPurpleRemainingTime()
     end
 end)
- loadstring(game:HttpGet("https://raw.githubusercontent.com/ZenithExility/ZenikazeHub/refs/heads/main/ZenikazeV3.1"))() 
+loadstring(game:HttpGet("https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"))()
