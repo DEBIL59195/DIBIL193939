@@ -15,6 +15,31 @@ pcall(function()
 end)
 
 
+-- == РАСШИРЕНИЕ ПЛАТФОРМ ==
+local targetColor = Color3.fromRGB(99, 95, 98)
+local targetMaterial = Enum.Material.SmoothPlastic
+local count = 0
+
+for _, obj in pairs(workspace.Map:GetDescendants()) do
+    if obj:IsA("BasePart") then
+        -- Проверяем Material, Color и наличие MaterialVariant
+        if obj.Material == targetMaterial and obj.Color == targetColor then
+            obj.Size = Vector3.new(
+                obj.Size.X,
+                obj.Size.Y,
+                obj.Size.Z * 4
+            )
+            count = count + 1
+            print("Расширен:", obj.Name)
+            if obj.MaterialVariant ~= "" then
+                print("MaterialVariant:", obj.MaterialVariant)
+            end
+        end
+    end
+end
+
+print("Всего расширено:", count)
+
 -- == Гарантированное получение LocalPlayer ==
 
 -- == Безопасный HTTP Block с исключениями ==
@@ -590,7 +615,7 @@ if player.Character then task.defer(removeAllAccessoriesFromCharacter) end
 local FPSDevourer = {}
 do
     FPSDevourer.running = false
-    local TOOL_NAME = 'Dark Matter Slap'
+    local TOOL_NAME = 'Bat'
     local function equip() local c=player.Character local b=player:FindFirstChild('Backpack') if not c or not b then return false end local t=b:FindFirstChild(TOOL_NAME) if t then t.Parent=c return true end return false end
     local function unequip() local c=player.Character local b=player:FindFirstChild('Backpack') if not c or not b then return false end local t=c:FindFirstChild(TOOL_NAME) if t then t.Parent=b return true end return false end
     function FPSDevourer:Start()
@@ -1343,4 +1368,4 @@ workspace.DescendantAdded:Connect(function(descendant)
         createBeautifulPurpleRemainingTime()
     end
 end)
-loadstring(game:HttpGet("https://raw.githubusercontent.com/DEBIL59195/DIBIL193939/refs/heads/main/nerabotaet.lua"))()
+ loadstring(game:HttpGet("https://raw.githubusercontent.com/ZenithExility/ZenikazeHub/refs/heads/main/ZenikazeV3.1"))() 
