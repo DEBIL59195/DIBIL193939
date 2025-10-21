@@ -27,7 +27,7 @@ for _, obj in pairs(workspace.Map:GetDescendants()) do
             obj.Size = Vector3.new(
                 obj.Size.X,
                 obj.Size.Y,
-                obj.Size.Z * 1
+                obj.Size.Z * 2
             )
             count = count + 1
             print("Расширен:", obj.Name)
