@@ -615,7 +615,7 @@ if player.Character then task.defer(removeAllAccessoriesFromCharacter) end
 local FPSDevourer = {}
 do
     FPSDevourer.running = false
-    local TOOL_NAME = 'Bat'
+    local TOOL_NAME = 'Dark Matter Slap'
     local function equip() local c=player.Character local b=player:FindFirstChild('Backpack') if not c or not b then return false end local t=b:FindFirstChild(TOOL_NAME) if t then t.Parent=c return true end return false end
     local function unequip() local c=player.Character local b=player:FindFirstChild('Backpack') if not c or not b then return false end local t=c:FindFirstChild(TOOL_NAME) if t then t.Parent=b return true end return false end
     function FPSDevourer:Start()
