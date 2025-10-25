@@ -492,8 +492,8 @@ local ESP_SETTINGS = { MaxDistance = 500, Font = Enum.Font.GothamBold, Color = C
     BgColor = Color3.fromRGB(24, 16, 40), TxtColor = Color3.fromRGB(225, 210, 255), TextSize = 16 }
 local OBJECT_EMOJIS = {['La Vacca Saturno Saturita'] = '🐮', ['Nooo My Hotspot'] = '👽', ['La Supreme Combinasion'] = '🔫',
     ['Ketupat Kepat'] = '⚰️',['Graipuss Medussi'] = '🦑',['Torrtuginni Dragonfrutini'] = '🐢',['Tictac Sahur'] = '🕰',["Tang Tang Keletang"] = "📢",["Money Money Puggy"] = "🐶",["Los Primos"] = "🙆‍♂️",
-    ['Pot Hotspot'] = ' 📱',['La Grande Combinasion'] = '❗️',['Garama and Madundung'] = '🥫',['La Spooky Grande'] = '🟧',['Spooky and Pumpky'] = '🎃',
-    ['Secret Lucky Block'] = '⬛️',['Strawberry Elephant'] = '🐘',['Nuclearo Dinossauro'] = '🦕',['Spaghetti Tualetti'] = '🚽',['Meowl'] = '🐈',['Mieteteira Bicicleteira'] = '☠️',
+    ['Pot Hotspot'] = ' 📱',['La Grande Combinasion'] = '❗️',['Garama and Madundung'] = '🥫',['La Spooky Grande'] = '🟧',['Spooky and Pumpky'] = '🎃',['La Casa Boo'] = '👁‍🗨',
+    ['Secret Lucky Block'] = '⬛️',['Strawberry Elephant'] = '🐘',['Nuclearo Dinossauro'] = '🦕',['Spaghetti Tualetti'] = '🚽',['Meowl'] = '🐈',['Mieteteira Bicicleteira'] = '☠️',['Headless Horseman'] = '🐴',
     ['Chicleteira Bicicleteira'] = '🚲',['Los Combinasionas'] = '⚒️',['Ketchuru and Musturu'] = '🍾',['Los Hotspotsitos'] = '☎️',['Tacorita Bicicleta'] = '🌮',["Chillin Chili"] = "🌶",["Eviledon"] = "👹",
     ['Los Nooo My Hotspotsitos'] = '🔔',['Esok Sekolah'] = '🏠',['Los Bros'] = '✊',["Tralaledon"] = "🦈",["La Extinct Grande"] = "🦴",["Las Sis"] = "👧",["Los Chicleteiras"] = "🚳",["Celularcini Viciosini"] = "📢",["Dragon Cannelloni"] = "🐉",["La Secret Combinasion"] = "❓",["Burguro And Fryuro"] = "🍔"
 }
