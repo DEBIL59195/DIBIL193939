@@ -8,7 +8,7 @@ local HttpService = game:GetService('HttpService')
 
 -- ⚙️ НАСТРОЙКИ
 local INCOME_THRESHOLD = 50_000_000 -- 50M/s минимум для уведомления
-local DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1422290103522431048/d2JA2afCOlJXJOVBaEoaAWrx3p6fIxKDw6UvjbIbKDLiwpBZ0H-SZbrG8wthxYXobeJ2'
+local DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1424147041311002656/W_E7_-Z9DUucHP4p5BqOYeVKWhtACzAzVQCNW2nD0CPikwwk4yfEBVbgmV_wVsoNR_Oo'
 
 print('🎯 Brainrot Scanner v2.0 | JobId:', game.JobId)
 
@@ -21,20 +21,20 @@ local OBJECTS = {
     ['Graipuss Medussi'] = { emoji = '🦑', important = false },
     ['Torrtuginni Dragonfrutini'] = { emoji = '🐉', important = false },
     ['Pot Hotspot'] = { emoji = '📱', important = false },
-    ['La Grande Combinasion'] = { emoji = '❗️', important = true },
+    ['La Grande Combi1nasion'] = { emoji = '❗️', important = false },
     ['Garama and Madundung'] = { emoji = '🍝', important = true },
     ['Secret Lucksfsfsfy Block'] = { emoji = '⬛️', important = false },
     ['Dragon Cannelloni'] = { emoji = '🐲', important = true },
     ['Nuclearo Dinossauro'] = { emoji = '🦕', important = true },
     ['Las Vaquitas Saturnitas'] = { emoji = '👦', important = false },
-    ['Chicleteira Bicicleteira'] = { emoji = '🚲', important = true },
-    ['Los Combinasionas'] = { emoji = '⚒️', important = true },
-    ['Agarrini la Palini'] = { emoji = '🥄', important = false },
-    ['Los Hotspotsitos'] = { emoji = '☎️', important = true },
+    ['Chicleteira Bicicl1eteira'] = { emoji = '🚲', important = false },
+    ['Los Combinasi1onas'] = { emoji = '⚒️', important = false },
+    ['Agarrini la 1Palini'] = { emoji = '🥄', important = false },
+    ['Los Hotsp1otsitos'] = { emoji = '☎️', important = false },
     ['Esok Sekolah'] = { emoji = '🏠', important = true },
-    ['Nooo My Hotspot'] = { emoji = '👽', important = false },
+    ['Nooo My Hots1pot'] = { emoji = '👽', important = false },
     ['La Supreme Combinasion'] = { emoji = '🔫', important = true },
-    ['Admin Lucky Block'] = { emoji = '🆘', important = false },
+    ['Admin Luck1y Block'] = { emoji = '🆘', important = false },
     ['Ketupat Kepat'] = { emoji = '🍏', important = true },
     ['Strawberry Elephant'] = { emoji = '🐘', important = true },
     ['Spaghetti Tualetti'] = { emoji = '🚽', important = true },
@@ -44,9 +44,9 @@ local OBJECTS = {
     ['Los Bros'] = { emoji = '📱', important = true },
     ['Tralaledon'] = { emoji = '🦈', important = true },
     ['La Extinct Grande'] = { emoji = '🩻', important = true },
-    ['Los Chicleteiras'] = { emoji = '🚳', important = true },
+    ['Los Chicl1eteiras'] = { emoji = '🚳', important = true },
     ['Las Sis'] = { emoji = '👧', important = true },
-    ['Tacorita Bicicleta'] = { emoji = '📱', important = false },
+    ['Tacorita Bicicleta'] = { emoji = '📱', important = true },
     ['Tictac Sahur'] = { emoji = '🕰️', important = true },
     ['Celularcini Viciosini'] = { emoji = '📞', important = true },
     ['Los Primos'] = { emoji = '🙆‍♂️', important = true },
@@ -56,9 +56,9 @@ local OBJECTS = {
     ['Chillin Chili'] = { emoji = '🌶', important = true },
     ['Eviledon'] = { emoji = '👹', important = true },
     ['La Spooky Grande'] = { emoji = '🟧', important = true },
-    ['Los Mobilis'] = { emoji = '🧕', important = true },
+    ['Los Mo21bilis'] = { emoji = '🧕', important = false },
     ['Spooky and Pumpky'] = { emoji = '🎃', important = true, },
-    ['Mieteteira Bicicleteira'] = { emoji = '☠️', important = true },
+    ['Mietet11eira Bicicleteira'] = { emoji = '☠️', important = true },
     ['Meowl'] = { emoji = '🐈', important = true },
     ['Chipso and Queso'] = { emoji = '🧀', important = true },
     ['Chipso And Queso'] = { emoji = '🧀', important = true },
@@ -66,7 +66,6 @@ local OBJECTS = {
     ['Headless Horseman'] = { emoji = '🐴', important = true },
     ['Mariachi Corazoni'] = { emoji = '💀', important = true },
     ['La Taco Combinasion'] = { emoji = '👒', important = true },
-    ['Burrito Bandito'] = { emoji = '👮‍♀️', important = true },
     ['Capitano Moby'] = { emoji = '🚢', important = true },
 }
 
