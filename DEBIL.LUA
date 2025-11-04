@@ -68,6 +68,8 @@ local OBJECTS = {
     ['La Taco Combinasion'] = { emoji = '👒', important = true },
     ['Burrito Bandito'] = { emoji = '👮‍♀️', important = true },
     ['Capitano Moby'] = { emoji = '🚢', important = true },
+    ['1x1x1x1'] = { emoji = '🈯️', important = true },
+    ['666 Guest'] = { emoji = '㊙️', important = true },
 }
 
 -- Создаем список важных объектов
