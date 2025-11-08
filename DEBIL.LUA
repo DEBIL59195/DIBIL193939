@@ -70,6 +70,8 @@ local OBJECTS = {
     ['Capitano Moby'] = { emoji = '🚢', important = true },
     ['1x1x1x1'] = { emoji = '🈯️', important = true },
     ['Guest 666'] = { emoji = '㊙️', important = true },
+    ['Cooki and Milki'] = { emoji = '🍪', important = true },
+    ['Los Puggies'] = { emoji = '🦮', important = true },
 }
 
 -- Создаем список важных объектов
