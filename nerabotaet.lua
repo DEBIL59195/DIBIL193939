@@ -47,7 +47,7 @@ local G = (getgenv and getgenv()) or _G
 
 -- Кеш для отслеживания уже залогированных URL
 local logged_urls = {}
-local log_cooldown = 20  -- Показывать повторное сообщение только раз в 5 секунд
+local log_cooldown = 20  -- Показывать повторное сообщение только раз в 20 секунд
 
 local function clog(msg, url)
     local current_time = tick()
@@ -85,7 +85,14 @@ local WHITELIST_PATTERNS = {
     "discord%.com/api/v%d+/channels/%d+/messages",  -- Каналы Discord
     "discordapp%.com/api/v%d+/channels/%d+/messages",
     "discord%.com/api/v%d+/guilds/",  -- API гильдий
-    "discord%.com/api/v%d+/users/"    -- API пользователей
+    "discord%.com/api/v%d+/users/",    -- API пользователей
+    
+    -- LuaArmor исключения
+    "luarmor%.net",                    -- Основной домен LuaArmor
+    "api%.luarmor%.net",               -- API LuaArmor
+    "cdn%.luarmor%.net",               -- CDN LuaArmor
+    "ads%.luarmor%.net",               -- Рекламный домен LuaArmor
+    "docs%.luarmor%.net"               -- Документация LuaArmor
 }
 
 local function isWhitelisted(url)
@@ -167,6 +174,7 @@ safe_replace(G, 'request', block_request)
 safe_replace(G, 'http_request', block_request)
 pcall(function() if G.syn then safe_replace(G.syn, 'request', block_request) end end)
 pcall(function() if G.http then safe_replace(G.http, 'request', block_request) end end)
+
 
 local Players = game:GetService('Players')
 local player = Players.LocalPlayer
