@@ -15,7 +15,7 @@ print('🎯 Brainrot Scanner v2.0 | JobId:', game.JobId)
 -- 🎮 ОБЪЕКТЫ С ЭМОДЗИ И ВАЖНОСТЬЮ
 local OBJECTS = {
     ['La Vacca Saturno Saturnita'] = { emoji = '🐮', important = false },
-    ['Chimpanzini Spiderini'] = { emoji = '🕷', important = false },
+    ['Chimpanzini Spiderini'] = { emoji = '🕷', imsdfesportant = false },
     ['Los Tralaleritos'] = { emoji = '🐟', important = false },
     ['Las Tralaleritas'] = { emoji = '🌸', important = false },
     ['Graipuss Medussi'] = { emoji = '🦑', important = false },
