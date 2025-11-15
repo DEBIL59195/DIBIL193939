@@ -75,6 +75,7 @@ local OBJECTS = {
     ['Fragrama and Chocrama'] = { emoji = '🍫', important = true },
     ['Los Spaghettis'] = { emoji = '🚾', important = true },
     ['Los Tacoritas'] = { emoji = '🚴', important = true },
+    ['Orcaledon'] = { emoji = '🐡', important = true },
 }
 
 -- Создаем список важных объектов
