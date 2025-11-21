@@ -44,7 +44,7 @@ local OBJECTS = {
     ['Los Bros'] = { emoji = '📱', important = true },
     ['Tralaledon'] = { emoji = '🦈', important = true },
     ['La Extinct Grande'] = { emoji = '🩻', important = true },
-    ['Los Chicleteiras'] = { emoji = '🚳', important = true },
+    ['Los Hotspotitos'] = { emoji = '📱', important = true },
     ['Las Sis'] = { emoji = '👧', important = true },
     ['Tacorita Bicicleta'] = { emoji = '📱', important = true },
     ['Tictac Sahur'] = { emoji = '🕰️', important = true },
