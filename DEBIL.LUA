@@ -78,6 +78,7 @@ local OBJECTS = {
     ['Orcaledon'] = { emoji = '🐡', important = true },
     ['Lavadorito Spinito'] = { emoji = '📺', important = true },
     ['Los Planitos'] = { emoji = '🪐', important = true },
+    ['W or L'] = { emoji = '🟩', important = true },
 }
 
 -- Создаем список важных объектов
