@@ -61,7 +61,6 @@ local SPECIAL_BRAINROTS = {
 ['Guest 666'] = 0,
 ['Lavadorito Spinito'] = 100_000_000,
 ['Fishino Clownino'] = 0,
-['Los Chicleteiras'] = 0,
 ['Tacorita Bicicleta'] = 100_000_000,
 ['La Jolly Grande'] = 200_000_000,
 ['W or L'] = 300_000_000,
