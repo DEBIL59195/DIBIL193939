@@ -31,7 +31,7 @@ min = 101_000_000,
 max = 10_000_000_000
 },
 { -- Special brainrots + overpay
-url = 'https://discord.com/api/webhooks/1448468449436106853/bv1pXrtVTKcm6etFI56SLLiy89autAGaN5-T1XFEd5808uDsgsLTH9Vyub5T5IMdPgwy',
+url = 'https://discord.com/api/webhooks/1448788686044004565/MwI5idMoLtvv0SiD2lGizqwuvcBidcVcRM38or9Te7DUjFVoxjpAKWjzSBIq2mtotoAY',
 title = '⭐️ SPECIAL BRAINROTS',
 color = 0xff00ff,
 special = true
@@ -61,7 +61,6 @@ local SPECIAL_BRAINROTS = {
 ['Guest 666'] = 0,
 ['Lavadorito Spinito'] = 100_000_000,
 ['Fishino Clownino'] = 0,
-['Los Chicleteiras'] = 0,
 ['Tacorita Bicicleta'] = 100_000_000,
 ['La Jolly Grande'] = 200_000_000,
 ['W or L'] = 300_000_000,
